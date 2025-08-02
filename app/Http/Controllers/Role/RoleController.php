@@ -19,7 +19,10 @@ class RoleController extends Controller
 {
     Gate::authorize('access-role'); // blocks at backend too
     $roles = Role::latest()->paginate(5);
-    return view('pages.AdminPages.Roles.index', compact('roles'));
+    $permissions = Permission::all();
+
+        // $rolePermissions = $roles->permissions->pluck('name')->toArray();
+    return view('pages.AdminPages.Roles.index', compact('roles','permissions'));
 }
 
 
@@ -30,7 +33,7 @@ class RoleController extends Controller
     {
         Gate::authorize('create-role');
 
-        $permissions = Permission::all();
+
         return view('pages.AdminPages.Roles.create', compact('permissions'));
     }
 
@@ -73,9 +76,7 @@ class RoleController extends Controller
     {
         Gate::authorize('edit-role');
 
-        $role = Role::findOrFail($id);
-        $permissions = Permission::all();
-        $rolePermissions = $role->permissions->pluck('name')->toArray();
+
 
         return view('pages.AdminPages.Roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }

@@ -13,8 +13,9 @@ use App\Http\Controllers\MedicalRecord\MedicalRecordController;
 use App\Http\Controllers\MedicalReport\MedicalReportController;
 use App\Http\Controllers\Admission\AdmissionController;
 use App\Http\Controllers\ProfileSetting\ProfileSettingController;
-
-
+use App\Http\Controllers\Hospital\HospitalController;
+use App\Http\Controllers\Discharge\DischargeController;
+use App\Http\Controllers\Feedback\FeedbackController;
 
 
 
@@ -60,7 +61,7 @@ Route::delete('permission/{id}',[PermissionController::class,'destroy'])->name('
 
 // Users Routes
 Route::get('users', [UserController::class,'index'])->name('user.index');
-Route::get('user/create', [UserController::class , 'create'])->name('user.create');
+// Route::get('user/create', [UserController::class , 'create'])->name('user.create');
 Route::post('users',[UserController::class ,'store'])->name('user.store');
 Route::get('user/{id}', [UserController::class , 'edit'])->name('user.edit');
 Route::put('user/{id}', [UserController::class,'update'])->name('user.update');
@@ -85,7 +86,7 @@ Route::resource('patients', PatientController::class);
 // Appointments
 
 Route::resource('appointment', AppointmentController::class);
-Route::get('get-doctors/{id}', [AppointmentController::class, 'getDoctors'])->name('get.doctors');
+Route::get('get-doctors', [AppointmentController::class, 'getDoctorsByDepartment']);
 Route::post('appointment/status-update', [AppointmentController::class, 'updateStatus'])->name('appointment.updateStatus');
 
 // Medical Record
@@ -102,14 +103,34 @@ Route::get('medical-report',[MedicalReportController::class,'index'])->name('med
 
 Route::get('admission','\App\Http\Controllers\Admission\AdmissionController@index')->name('admission.index');
 Route::post('admission/create','\App\Http\Controllers\Admission\AdmissionController@store')->name('admissions.store');
-Route::post('admission/update/{id}','\App\Http\Controllers\Admission\AdmissionController@update')->name('admissions.update');
+Route::put('admission/update/{id}','\App\Http\Controllers\Admission\AdmissionController@update')->name('admissions.update');
 
+Route::get('/get-beds-by-ward', [AdmissionController::class, 'getBedsByWard'])->name('get.beds.by.ward');
 
 // ProfileSetting Routes
 
 Route::get('/profile-setting', '\App\Http\Controllers\ProfileSetting\ProfileSettingController@index')->name('admin.profile_setting');
 Route::put('/profile-update', '\App\Http\Controllers\ProfileSetting\ProfileSettingController@update')->name('admin.profile_update');
 Route::put('/admin/change-password', [ProfileSettingController::class, 'changePassword'])->name('admin.change_password');
+
+// Hospital Management Routes
+Route::get('/hospital-management', [HospitalController::class, 'index'])->name('hospital.management');
+Route::post('hospita-management/create/ward',[HospitalController::class,'wardstore'])->name('hospital.management.ward.store');
+Route::put('hospital-management/update/ward',[HospitalController::class,'editWard'])->name('hospital.management.ward.update');
+Route::delete('hospital-management/delete/{id}/ward',[HospitalController::class,'destroy'])->name('hospital.management.destroy');
+// Bed Routes
+Route::post('hospita-management/create/bed',[HospitalController::class ,'bedstore'])->name('hospital.management.bed.store');
+Route::put('hospital-management/update/bed',[HospitalController::class,'bedupdate'])->name('hospital.management.bed.update');
+Route::delete('hospital-management/delete/{id}/bed',[HospitalController::class,'beddestroy'])->name('hospital.management.bed.destroy');
+Route::get('/get-beds-by-ward', [HospitalController::class, 'getBedsByWard'])->name('get.beds.by.ward');
+
+// Medicien Routes
+Route::post('hospital-management/create/medicine',[HospitalController::class,'medicinestore'])->name('hospital.management.medicine.store');
+Route::put('hospital-management/upadte/medicine',[HospitalController::class,'medicineupdate'])->name('hospital.management.medicine.update');
+Route::delete('hospital-management/delete/{id}/medicine',[HospitalController::class,'medicinedestroy'])->name('hospital.management.medicine.destroy');
+Route::post('/discharges', [DischargeController::class, 'store'])->name('discharge.store');
+Route::post('/feedback/submit', [FeedbackController::class, 'store'])->name('admin.feedback.submit');
+
 
 });
 

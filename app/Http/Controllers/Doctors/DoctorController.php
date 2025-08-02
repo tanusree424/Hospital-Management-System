@@ -19,8 +19,9 @@ class DoctorController extends Controller
      */
     public function index()
     {
-        $doctors = Doctor::with('user','department')->paginate(5);
-        return view('pages.AdminPages.Doctors.index', compact('doctors'));
+        $doctors = Doctor::with('user','department')->get();
+         $departments = Department::all();
+        return view('pages.AdminPages.Doctors.index', compact('doctors','departments'));
     }
 
     /**
@@ -28,7 +29,7 @@ class DoctorController extends Controller
      */
     public function create()
     {
-     $departments = Department::all();
+
      return view('pages.AdminPages.Doctors.create',compact('departments'));
     }
 
@@ -49,7 +50,7 @@ public function store(Request $request)
     ]);
 
     if ($validator->fails()) {
-        return redirect()->route('doctors.create')->withErrors($validator)->withInput();
+        return redirect()->route('doctors.index')->withErrors($validator)->withInput();
     }
 
     // ✅ Create user

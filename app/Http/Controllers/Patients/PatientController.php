@@ -15,7 +15,7 @@ class PatientController extends Controller
      */
     public function index()
     {
-       $patients = Patient::with(['user','appointment.doctor.user'])->paginate(5);
+       $patients = Patient::with(['user','appointment.doctor.user'])->get();
 
 
         return view('pages.AdminPages.Patients.index', compact('patients'));
@@ -42,8 +42,14 @@ class PatientController extends Controller
             "gender"=>"required|in:male,female,other",
             "phone"=>"required|digits:10",
             "patient_image"=>"nullable|image|mimes:png,jpg,jpeg",
-            "address"=>"required|string|max:255"
+            "address"=>"required|string|max:255",
+            "pincode"=>"nullable|string|max:50",
+            "state"=>"nullable|string|max:20",
+            "country"=>"nullable|string|max:20",
+            "post_office_name"=>"nullable|string|max:20",
+            "city"=>"nullable|string|max:20"
         ]);
+       // dd($request->all());
         if ($validate->fails()) {
             return redirect()->route('patients.create')->withErrors($validate)->withInput();
         }
@@ -65,7 +71,12 @@ class PatientController extends Controller
             "gender"=>$request->gender,
             "phone"=>$request->phone,
             "patient_image"=>$imageSave,
-            "address"=>$request->address
+            "address"=>$request->address,
+            "pincode"=>$request->pincode,
+            "state"=>$request->state,
+            "country"=>$request->country,
+            "post_office"=>$request->post_office,
+            "city"=>$request->city
         ]);
         if ($patient) {
             return redirect()->route('patients.index')->with('success','patient Created Successfully');
@@ -104,9 +115,14 @@ class PatientController extends Controller
             "gender"=>"nullable|in:male,female,other",
             "phone"=>"nullbale|digits:10",
             "patient_image"=>"nullable|image|mimes:png,jpg,jpeg",
-            "address"=>"required|string|max:255"
+            "address"=>"required|string|max:255",
+            "pincode"=>"nullable|string",
+            "state"=>"nullable|string|max:20",
+            "city"=>"nullable|string|max:20",
+            "country"=>"nullable|string|max:20",
+            "post_office"=>"nullable|string|max:20"
         ]);
-        $imagePath = null;
+        $imagePath = $patient->patient_image;
         if ($request->hasFile('patient_image')) {
             $image = $request->file('patient_image');
             $imageName = time().'-'. $image->getClientOriginalExtension();
@@ -116,8 +132,13 @@ class PatientController extends Controller
         $patient->update([
             "DOB"=>$request->dob,
             "gender"=>$request->gender,
-            "phone"=>$patient->phone,
-            "patient_image"=>$imagePath
+            "phone"=>$request->phone,
+            "patient_image"=>$imagePath,
+            "pincode"=>$request->pincode,
+            "state"=>$request->state,
+            "country"=>$request->country,
+            "post_office"=>$request->post_office,
+            "city"=>$request->city
 
         ]);
         $patient->user->update([

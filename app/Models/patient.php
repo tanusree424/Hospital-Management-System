@@ -12,7 +12,7 @@ class patient extends Model
 {
     use HasFactory,SoftDeletes;
     protected $table = "patients";
-    protected $fillable = ['user_id','DOB','gender','phone','patient_image','address'];
+    protected $fillable = ['user_id','DOB','gender','phone','patient_image','address','pincode','state','country','post_office','city'];
 
     public function user()
     {

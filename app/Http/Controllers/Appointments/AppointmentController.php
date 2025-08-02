@@ -19,43 +19,48 @@ class AppointmentController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $doctor_user = auth()->user();
-        $doctor = Doctor::where('user_id', $doctor_user->id)->first();
-        $patient_user = auth()->user();
-        $patient = patient::where('user_id', $patient_user->id)->first();
-        if ($patient) {
-           $appointments = Appointment::where('patient_id', $patient->id)->latest('id')->with('patient.user','doctor.user','department','medical_record')->paginate(5);
-           $departments = Department::all();
-           $doctors =Doctor::all();
-           $patients = Patient::all();
-          return view('pages.AdminPages.Appoinments.index', compact('appointments','departments','doctors','patients'));
-        }
-        if ($doctor) {
+{
+    $user = auth()->user();
 
-            $appointments = Appointment::where('doctor_id', $doctor->id)->latest('id')->with(['patient.user', 'doctor.user', 'department', 'medical_record'])->paginate(5);
-              $departments = Department::all();
+    $doctor = Doctor::where('user_id', $user->id)->first();
+    $patient = Patient::where('user_id', $user->id)->first();
 
-        $doctors  = Doctor::all();
-        $patients = Patient::all();
+    $isDoctor = false;
+    $isPatient = false;
 
-            return view('pages.AdminPages.Appoinments.index', compact('appointments','departments','doctors','patients'));
-        }
-
-
-        else{
+    if ($patient) {
+        $isPatient = true;
+        $appointments = Appointment::where('patient_id', $patient->id)
+            ->latest('id')
+            ->with('patient.user', 'doctor.user', 'department', 'medical_record')
+            ->get();
+    } elseif ($doctor) {
+        $isDoctor = true;
+        $appointments = Appointment::where('doctor_id', $doctor->id)
+            ->latest('id')
+            ->with('patient.user', 'doctor.user', 'department', 'medical_record')
+            ->get();
+    } else {
+        // For Admin or other roles
         $appointments = Appointment::latest('id')
-    ->with(['patient.user', 'doctor.user', 'department', 'medical_record'])
-    ->paginate(5);
-
-        $departments = Department::all();
-
-        $doctors  = Doctor::all();
-        $patients = Patient::all();
-
-        return view('pages.AdminPages.Appoinments.index', compact('appointments','departments','doctors','patients'));
+            ->with('patient.user', 'doctor.user', 'department', 'medical_record')
+            ->get();
     }
+
+    $departments = Department::all();
+    $doctors = Doctor::all();
+    $patients = Patient::all();
+
+    return view('pages.AdminPages.Appoinments.index', compact(
+        'appointments',
+        'departments',
+        'doctors',
+        'patients',
+        'isDoctor',
+        'isPatient'
+    ));
 }
+
 
     /**
      * Show the form for creating a new resource.
@@ -91,21 +96,17 @@ public function create()
 //     $doctors = Doctor::with('user:id,name')->where('department_id', $id)->get(['id', 'user_id']);
 //     return response()->json($doctors);
 // }
-public function getDoctors($department_id)
+// DoctorController.php
+public function getDoctorsByDepartment(Request $request)
 {
+    $department_id = $request->department_id;
     $doctors = Doctor::where('department_id', $department_id)
-        ->with('user') // assuming doctor has relation with user
-        ->get(['id', 'user_id']); // fetch required fields only
+        ->with('user') // so you get access to $doctor->user->name
+        ->get();
 
-    $formattedDoctors = $doctors->map(function($doc) {
-        return [
-            'id' => $doc->id,
-            'name' => $doc->user->name
-        ];
-    });
-
-    return response()->json($formattedDoctors);
+    return response()->json($doctors);
 }
+
 
 
     /**

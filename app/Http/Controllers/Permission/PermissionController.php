@@ -19,7 +19,7 @@ class PermissionController extends Controller
         abort(403, 'Unauthorized access.');
     }
 
-    $permissions = Permission::latest()->paginate(5);
+    $permissions = Permission::latest()->get();
     return view('pages.AdminPages.Permissions.index', compact('permissions'));
 }
 

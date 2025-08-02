@@ -1,38 +1,35 @@
 @extends('layouts.AdminLayout.app')
 
 @section('content')
-    <div class="container-fluid mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-center text-primary w-100">🏥 Admission & Discharge Management</h2>
+    <div class="card">
+        <div class=" card-header bg-primary d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-white text-primary w-100">🏥 Admission & Discharge Management</h2>
+            <button class="btn btn-success btn-sm fw-bold rounded-pill" data-bs-toggle="modal"
+                data-bs-target="#createAdmissionModal">
+                +Admit Patient
+            </button>
         </div>
+        <div class="card-body bg-light-subtle">
 
-        {{-- Flash Messages --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                ✅ {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                ❌ {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
+            {{-- Flash Messages --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ✅ {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ❌ {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
-        <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center rounded-top-4">
-                <h4 class="mb-0">📋 All Admissions</h4>
-                <button class="btn btn-light btn-sm fw-bold rounded-pill" data-bs-toggle="modal"
-                        data-bs-target="#createAdmissionModal">
-                    + Admit Patient
-                </button>
-            </div>
 
-            <div class="card-body bg-light-subtle">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center align-middle" id="table_data">
-                        <thead class="table-dark">
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="table_data">
+                    <thead class="table-dark">
                         <tr>
                             <th>#</th>
                             <th>Patient Name</th>
@@ -43,20 +40,21 @@
                             <th>Edit</th>
                             <th>Discharge Action</th>
                         </tr>
-                        </thead>
-                        <tbody>
+                    </thead>
+                    <tbody>
                         @php $userRole = Auth::user()->roles->pluck('name')->first(); @endphp
 
                         @forelse($admissions as $index => $admission)
-                            @if($userRole === 'Patient' && Auth::id() !== $admission->patient->user->id)
+                            @if ($userRole === 'Patient' && Auth::id() !== $admission->patient->user->id)
                                 @continue
                             @endif
 
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $admission->patient->user->name }}</td>
-                                <td>{{ $admission->ward }}</td>
-                                <td>{{ $admission->bed }}</td>
+                                <td>{{ $admission->ward->name }}</td>
+                                <td>{{ optional($admission->bed)->bed_number ?? 'N/A' }}</td>
+
                                 <td>{{ \Carbon\Carbon::parse($admission->admission_date)->format('d-M-Y') }}</td>
                                 <td>
                                     @if ($admission->discharge)
@@ -68,7 +66,7 @@
                                 <td>
                                     @if (!$admission->discharge)
                                         <button class="btn btn-warning rounded-pill" data-bs-toggle="modal"
-                                                data-bs-target="#editAdmissionModal{{ $admission->id }}">Edit
+                                            data-bs-target="#editAdmissionModal{{ $admission->id }}">Edit
                                         </button>
                                     @else
                                         <button class="btn btn-secondary rounded-pill" disabled>Edit</button>
@@ -77,7 +75,7 @@
                                 <td>
                                     @if (!$admission->discharge)
                                         <button class="btn btn-danger btn-sm rounded-pill" data-bs-toggle="modal"
-                                                data-bs-target="#dischargeFormModal{{ $admission->id }}">Discharge
+                                            data-bs-target="#dischargeFormModal{{ $admission->id }}">Discharge
                                         </button>
                                     @else
                                         <button class="btn btn-secondary btn-sm rounded-pill" disabled>Discharged</button>
@@ -89,169 +87,234 @@
                                 <td colspan="8" class="text-center text-muted">No admission records found.</td>
                             </tr>
                         @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
     </div>
 
     {{-- Admission Modal --}}
-    <div class="modal fade" id="createAdmissionModal" tabindex="-1" aria-labelledby="createAdmissionModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <form action="{{ route('admissions.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title">Admit Patient</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3 row">
-                            <label class="col-md-4 col-form-label fw-bold text-dark">Patient:</label>
-                            <div class="col-md-8">
-                                <select name="patient_id" class="form-select border-dark" required>
-                                    <option value="">-- Select Patient --</option>
-                                    @foreach ($patients as $patient)
-                                        <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+    @push('modals')
+       @php
+    $user = Auth::user();
+@endphp
 
-                        <div class="mb-3 row">
-                            <label class="col-md-4 col-form-label fw-bold text-dark">Admission Date:</label>
-                            <div class="col-md-8">
-                                <input type="date" name="admission_date" class="form-control border-dark" required>
-                            </div>
-                        </div>
+<div class="modal fade" id="createAdmissionModal" tabindex="-1" aria-labelledby="createAdmissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('admissions.store') }}" method="POST">
+                @csrf
 
-                        <div class="mb-3 row">
-                            <label class="col-md-4 col-form-label fw-bold text-dark">Ward:</label>
-                            <div class="col-md-8">
-                                <input type="text" name="ward" class="form-control border-dark" required>
-                            </div>
-                        </div>
+                {{-- Patient Selection --}}
+               @if ($user->hasRole('Patient'))
+    @php
+        $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
+                            ->whereNull('discharge_date')
+                            ->exists();
+    @endphp
 
-                        <div class="mb-3 row">
-                            <label class="col-md-4 col-form-label fw-bold text-dark">Bed:</label>
-                            <div class="col-md-8">
-                                <input type="text" name="bed" class="form-control border-dark" required>
-                            </div>
-                        </div>
+    @if ($alreadyAdmitted)
+        <div class="alert alert-warning m-3">
+            You are already admitted. Please contact the administration for further assistance.
+        </div>
+    @else
+        <select name="patient_id" class="form-select" required readonly>
+            <option value="{{ $user->patient->id }}" selected>{{ $user->name }}</option>
+        </select>
+    @endif
+@else
+    <select name="patient_id" class="form-select" required>
+        <option value="">Select Patient</option>
+        @foreach ($availablePatients as $patient)
+            <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
+        @endforeach
+    </select>
+@endif
 
-                        <div class="mb-3 row">
-                            <label class="col-md-4 col-form-label fw-bold text-dark">Reason:</label>
-                            <div class="col-md-8">
-                                <textarea name="reason" class="form-control border-dark" rows="3" required></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Admit Patient</button>
-                    </div>
-                </form>
-            </div>
+                {{-- Admission Date --}}
+                <input type="date" name="admission_date" class="form-control" required>
+
+                {{-- Ward Selection --}}
+                <select name="ward_id" id="ward-select" class="form-select" required>
+                    <option value="">Select Ward</option>
+                    @foreach ($wards as $ward)
+                        <option value="{{ $ward->id }}">{{ $ward->name }}</option>
+                    @endforeach
+                </select>
+
+                {{-- Bed Selection (populated via JS) --}}
+                <select name="bed_id" id="bed-select" class="form-select" required>
+                    <option value="">Select Bed</option>
+                    {{-- Options will be dynamically loaded --}}
+                </select>
+
+                {{-- Reason for admission --}}
+                <textarea name="reason" class="form-control" rows="3" required></textarea>
+
+                <button type="submit" class="btn btn-primary">Admit Patient</button>
+            </form>
         </div>
     </div>
+</div>
 
+    @endpush
     {{-- Modals (outside of table) --}}
-    @foreach($admissions as $admission)
+    @foreach ($admissions as $admission)
         {{-- Edit Modal --}}
-        <div class="modal fade" id="editAdmissionModal{{ $admission->id }}" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <form action="{{ route('admissions.update', $admission->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">Edit Admission</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3 row">
-                                <label class="col-md-4 form-label fw-bold">Patient</label>
-                                <div class="col-md-8">
-                                    <select name="patient_id" class="form-select" required>
-                                        @foreach ($patients as $patient)
-                                            <option value="{{ $patient->id }}" {{ $admission->patient_id == $patient->id ? 'selected' : '' }}>
-                                                {{ $patient->user->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="mb-3 row">
-                                <label class="col-md-4 form-label fw-bold">Admission Date</label>
-                                <div class="col-md-8">
-                                    <input type="date" name="admission_date" class="form-control" value="{{ $admission->admission_date }}">
-                                </div>
-                            </div>
-
-                            <div class="mb-3 row">
-                                <label class="col-md-4 form-label fw-bold">Ward</label>
-                                <div class="col-md-8">
-                                    <input type="text" name="ward" class="form-control" value="{{ $admission->ward }}">
-                                </div>
-                            </div>
-
-                            <div class="mb-3 row">
-                                <label class="col-md-4 form-label fw-bold">Bed</label>
-                                <div class="col-md-8">
-                                    <input type="text" name="bed" class="form-control" value="{{ $admission->bed }}">
-                                </div>
-                            </div>
-
-                            <div class="mb-3 row">
-                                <label class="col-md-4 form-label fw-bold">Reason</label>
-                                <div class="col-md-8">
-                                    <textarea name="reason" class="form-control" rows="3">{{ $admission->reason }}</textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Update</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Discharge Modal --}}
-        @if (!$admission->discharge)
-            <div class="modal fade" id="dischargeFormModal{{ $admission->id }}" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
+        @push('modals')
+            <div class="modal fade" id="editAdmissionModal{{ $admission->id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
-                        <form action="" method="POST">
+                        <form action="{{ route('admissions.update', $admission->id) }}" method="POST">
                             @csrf
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title">Discharge Patient</h5>
+                            @method('PUT')
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Edit Admission</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                                <p>Are you sure you want to discharge <strong>{{ $admission->patient->user->name }}</strong>?</p>
-                                <div class="mb-3">
-                                    <label class="form-label">Discharge Reason</label>
-                                    <textarea name="discharge_reason" class="form-control" required></textarea>
+                                <div class="mb-3 row">
+                                    <label class="col-md-4 form-label fw-bold">Patient</label>
+                                    <div class="col-md-8">
+                                        <select name="patient_id" class="form-select" required>
+                                            @foreach ($patients as $patient)
+                                                <option value="{{ $patient->id }}"
+                                                    {{ $admission->patient->id == $patient->id ? 'selected' : '' }}>
+                                                    {{ $patient->user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Discharge Date</label>
-                                    <input type="date" name="discharge_date" class="form-control" required>
+
+                                <div class="mb-3 row">
+                                    <label class="col-md-4 form-label fw-bold">Admission Date</label>
+                                    <div class="col-md-8">
+                                        <input type="date" name="admission_date" class="form-control"
+                                            value="{{ $admission->admission_date }}">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 row">
+                                    <label class="col-md-4 form-label fw-bold">Ward</label>
+                                    <div class="col-md-8">
+                                        <select name="ward_id" id="edit_ward_id" class="form-control form-select">
+                                            @foreach ($wards as $ward)
+                                                <option value="{{ $ward->id }}" @selected($ward->id == $admission->ward_id)>
+                                                    {{ $ward->name }}
+                                                </option>
+                                            @endforeach
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 row">
+                                    <label class="col-md-4 form-label fw-bold">Bed</label>
+                                    <div class="col-md-8">
+                                        <select name="bed_id" id="edit_bed_id" class="form-select"
+                                            data-selected-bed="{{ $admission->bed_id }}">
+                                            <option value="{{ $admission->bed->id }}" selected>
+                                                {{ $admission->bed->bed_number }}</option>
+                                            {{-- Other options will be filled via AJAX if ward is changed --}}
+                                        </select>
+
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 row">
+                                    <label class="col-md-4 form-label fw-bold">Reason</label>
+                                    <div class="col-md-8">
+                                        <textarea name="reason" class="form-control" rows="3">{{ $admission->reason }}</textarea>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button class="btn btn-danger" type="submit">Confirm Discharge</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Update</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
+        @endpush
+
+        {{-- Discharge Modal --}}
+        @if (!$admission->discharge)
+            @push('modals')
+                <div class="modal fade" id="dischargeFormModal{{ $admission->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <form action="{{ route('discharge.store') }}" method="POST">
+                                @csrf
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">Discharge Patient</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to discharge
+                                        <strong>{{ $admission->patient->user->name }}</strong>?
+                                    </p>
+                                    <input type="hidden" name="bed_id" value="{{ $admission->bed_id }}">
+                                    <input type="hidden" name="patient_id" value="{{ $admission->patient->id }}">
+                                    <input type="hidden" name="admission_id" value="{{ $admission->id }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Discharge Reason</label>
+                                        <textarea name="discharge_reason" style="resize: none;" class="form-control" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Discharge Date</label>
+                                        <input type="date" name="discharge_date" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button class="btn btn-danger" type="submit">Confirm Discharge</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endpush
         @endif
+        @push('modals')
+            <!-- Feedback Modal -->
+            <!-- Feedback Modal -->
+            <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content p-3">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Rate Your Experience</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="feedbackForm">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="mb-3 text-center">
+                                    <div class="star-rating">
+                                        @for ($i = 5; $i >= 1; $i--)
+                                            <input type="radio" name="rating" id="star{{ $i }}"
+                                                value="{{ $i }}">
+                                            <label for="star{{ $i }}">★</label>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" id="ratingValue" name="rating">
+                                </div>
+                                <div class="mb-3">
+                                    <textarea class="form-control" id="message" rows="3" placeholder="Write your feedback..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endpush
     @endforeach
+    </div>
 @endsection
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -262,15 +325,161 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#table_data').DataTable({
+    $(document).ready(function() {
+        $("#table_data").DataTable({
             responsive: true,
-            dom: '<"d-flex justify-content-center mb-3"B>frtip',
+            dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
             buttons: ['copy', 'excel', 'print'],
-            columnDefs: [
-                { orderable: false, targets: [6, 7] }
-            ]
+            columnDefs: [{
+                    orderable: false,
+                    targets: [3]
+                } // Action column
+            ],
+            lengthMenu: [
+                [5, 10, 25, 50, 100, -1],
+                [10, 25, 50, 100, "All"]
+            ],
+            language: {
+                search: "Search:",
+                zeroRecords: "No matching roles found",
+                info: "Showing _START_ to _END_ of _TOTAL_ roles",
+                infoEmpty: "No roles available",
+                infoFiltered: "(filtered from _MAX_ total roles)",
+                lengthMenu: "Show _MENU_ entries",
+            }
+        });
+
+
+        $('.dataTables_filter input[type="search"]').addClass('form-control mb-3').attr("placeholder",
+            "Search...");
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $(document).on('change', '#edit_ward_id', function() {
+            const wardId = $(this).val();
+            const bedSelect = $('#edit_bed_id');
+            const currentBedId = bedSelect.data('selected-bed'); // Get preselected bed ID
+
+            if (wardId) {
+                $.ajax({
+                    url: "{{ route('get.beds.by.ward') }}",
+                    type: "GET",
+                    data: {
+                        ward_id: wardId,
+                        current_bed_id: currentBedId
+                    },
+                    success: function(beds) {
+                        bedSelect.empty().append(
+                            `<option value="">-- Select Bed --</option>`);
+
+                        $.each(beds, function(index, bed) {
+                            const isSelected = bed.id == currentBedId ? 'selected' :
+                                '';
+                            bedSelect.append(
+                                `<option value="${bed.id}" ${isSelected}>${bed.bed_number}</option>`
+                            );
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to load beds:', xhr.responseText);
+                        alert('An error occurred while fetching beds. Please try again.');
+                    }
+                });
+            } else {
+                bedSelect.empty().append(`<option value="">-- Select Bed --</option>`);
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // Show modal after successful discharge (can be conditional)
+        @if (session('discharge_success'))
+            $('#feedbackModal').modal('show');
+            Swal.fire({
+    icon: 'success',
+    title: 'Success!',
+    text: '{{ session('success') }}',
+    timer: 3000,
+    showConfirmButton: false
+});
+        @endif
+
+        // Star rating logic
+        let rating = 0;
+        $('.star').on('click', function() {
+            rating = $(this).data('value');
+            $('#ratingValue').val(rating);
+
+            $('.star').removeClass('text-warning');
+            $('.star').each(function() {
+                if ($(this).data('value') <= rating) {
+                    $(this).addClass('text-warning');
+                }
+            });
+        });
+
+        // Handle feedback submission (AJAX or regular form)
+       $('#feedbackForm').on('submit', function(e) {
+    e.preventDefault();
+
+     const rating = $('input[name="rating"]:checked').val();
+    const message = $('#message').val();
+
+    console.log("Rating:", rating); // Debug here
+    console.log("Message:", message);
+
+    $.post("{{ route('admin.feedback.submit') }}", {
+        _token: '{{ csrf_token() }}',
+        rating,
+        message
+    })
+    .done(function(response) {
+        Swal.fire({
+             icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#3085d6'
+        })
+        $('#feedbackModal').modal('hide');
+        $('#feedbackForm')[0].reset();
+    })
+    .fail(function(xhr) {
+        alert('Submission failed: ' + xhr.responseText);
+    });
+});
+
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#ward-select').on('change', function () {
+            const wardId = $(this).val();
+            const bedSelect = $('#bed-select');
+            bedSelect.empty().append('<option value="">Loading...</option>');
+
+            if (wardId) {
+                $.ajax({
+                    url: "{{ route('get.beds.by.ward') }}", // This should be a defined route
+                    type: "GET",
+                    data: { ward_id: wardId },
+                    success: function (response) {
+                        bedSelect.empty().append('<option value="">Select Bed</option>');
+                        if (response.length > 0) {
+                            response.forEach(function (bed) {
+                                bedSelect.append(`<option value="${bed.id}">${bed.bed_number}</option>`);
+                            });
+                        } else {
+                            bedSelect.append('<option value="">No available beds</option>');
+                        }
+                    }
+                });
+            }
         });
     });
 </script>
 
+
+
+@stack('modals')

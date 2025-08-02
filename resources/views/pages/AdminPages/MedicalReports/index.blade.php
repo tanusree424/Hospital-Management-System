@@ -1,10 +1,12 @@
 @extends('layouts.AdminLayout.app')
 @section('content')
-<div class="container-fluid">
-    <div class="col-md-12 text-center">
-        <h4 class="text-center">Medical Records</h4>
-    </div>
-    <hr>
+<div class="card">
+  <div class="card-header bg-primary d-flex justify-content-between">
+     <h4 class="text-center text-white"><i class="fa fa-file-medical me-2"></i>Medical Records</h4>
+  </div>
+
+<div class="card-body">
+
     <div class="col-md-8 m-auto">
         <table class="table table-bordered shadow-sm shadow align-middle table-stripped table-hover" id="table_data">
             <thead class="table-dark">
@@ -35,7 +37,7 @@
 
         <input type="hidden" name="appointment_id" value="{{$mr_record->appointment->id}}">
         <button type="submit" class="btn btn-sm btn-primary" target="_blank" download>
-            Download Report
+           <i class="fa fa-download"></i> Download Report
         </button>
         </form>
         </td>
@@ -50,6 +52,9 @@
         </table>
     </div>
 </div>
+
+</div>
+ </div>
 @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -63,11 +68,26 @@
      $(document).ready(function () {
         $('#table_data').DataTable({
             responsive: true,
-            dom: '<"d-flex justify-content-center mb-3"B>frtip',
+            dom: '<"d-flex justify-content-between align-items-center mb-3"lBf>rtip',
             buttons: ['copy', 'excel', 'print'],
-            columnDefs: [
-                { orderable: false, targets: [1,3] }
-            ]
+            columnDefs: [{
+                orderable: false,
+                targets: [2]
+            }],
+            lengthMenu: [
+        [5, 10, 25, 50, 100, -1],
+        [5, 10, 25, 50, 100, "All"]
+    ],
+            language: {
+                search: "Search:",
+                zeroRecords: "No matching patients found",
+                info: "Showing _START_ to _END_ of _TOTAL_ patients",
+                infoEmpty: "No patients available",
+                infoFiltered: "(filtered from _MAX_ total patients)",
+                lengthMenu: "Show _MENU_ entries"
+            }
         });
+        $('.dataTables_filter input[type="search"]').addClass('form-control mb-3').attr("placeholder",
+            "Search...");
     });
 </script>

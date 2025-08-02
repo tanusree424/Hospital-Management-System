@@ -14,15 +14,16 @@ class UserController extends Controller
     public function index()
     {
         Gate::authorize('access_user');
-        $users = User::latest('id')->paginate(5);
-        return view('pages.AdminPages.Users.index',compact('users'));
+        $users = User::latest('id')->get();
+        $roles =  Role::all();
+        return view('pages.AdminPages.Users.index',compact('users','roles'));
     }
-    public function create()
+    // public function create()
 
-    {
-        $roles = Role::all();
-        return view('pages.AdminPages.Users.create', compact('roles'));
-    }
+    // {
+
+    //     return view('pages.AdminPages.Users.create', compact('roles'));
+    // }
     public function store(Request $request)
     {
         $validate = Validator::make($request->all(),[
@@ -31,7 +32,7 @@ class UserController extends Controller
             "password"=>"required|confirmed"
         ]);
         if ($validate->fails()) {
-            return redirect()->route('user.create')->withErrors($validate);
+            return redirect()->route('user.index')->withErrors($validate);
         }
         $user = User::create([
             "name"=>$request->name,

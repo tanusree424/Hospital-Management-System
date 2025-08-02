@@ -89,7 +89,7 @@
 </tr>
 
 {{-- Include View Modal --}}
-@include('admin.appointments.modals.view', ['appo' => $appo])
+@include('', ['appo' => $appo])
 
 {{-- Include Edit Modal --}}
 @include('admin.appointments.modals.edit', [
