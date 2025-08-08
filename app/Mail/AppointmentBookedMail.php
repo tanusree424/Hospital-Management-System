@@ -13,12 +13,16 @@ class AppointmentBookedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $appointment;
+    public $appointment_number;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($appointment, $appointment_number)
     {
-        //
+        $this->appointment = $appointment;
+        $this->appointment_number = $appointment_number;
     }
 
     /**
@@ -37,7 +41,7 @@ class AppointmentBookedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.appointment_booked',
         );
     }
 

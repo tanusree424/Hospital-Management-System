@@ -35,5 +35,9 @@ return [
     'token' => env('TWILIO_AUTH_TOKEN'),
     'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
 ],
+'razorpay' => [
+    'key' => env('RAZORPAY_KEY'),
+    'secret' => env('RAZORPAY_SECRET'),
+],
 
 ];

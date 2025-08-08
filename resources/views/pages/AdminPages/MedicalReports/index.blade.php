@@ -19,36 +19,32 @@
                 </tr>
             </thead>
             <tbody>
-                @if ($medical_records->count() >0 )
-                @php
-                    $index=1;
+    @if ($medical_records->count() > 0)
+        @php $index = 1; @endphp
+        @foreach ($medical_records as $mr_record)
+            <tr class="text-center">
+                <td>{{ $index++ }}</td>
+                <td>{{ $mr_record->patient->user->name }}</td>
+                <td>{{ $mr_record->doctor->user->name }}</td>
+                <td>{{ $mr_record->doctor->department->name }}</td>
+                <td>
+                    @if (!is_null($mr_record->appointment) && $mr_record->appointment->id)
+                        <form action="{{ route('medical_record.download') }}" method="POST" target="_blank">
+                            @csrf
+                            <input type="hidden" name="appointment_id" value="{{ $mr_record->appointment->id }}">
+                            <button type="submit" class="btn btn-sm btn-primary" download>
+                                <i class="fa fa-download"></i> Download Report
+                            </button>
+                        </form>
+                    @else
+                        <span class="text-dark">No Report Uploaded</span>
+                    @endif
+                </td>
+            </tr>
+        @endforeach
+    @endif
+</tbody>
 
-                @endphp
-                    @foreach ($medical_records as $mr_record )
-                        <tr class="text-center">
-                            <td>{{$index++}}</td>
-                            <td>{{$mr_record->patient->user->name}}</td>
-                            <td>{{$mr_record->doctor->user->name}}</td>
-                            <td>{{$mr_record->doctor->department->name}}</td>
-                            <td>
-                            @if ($mr_record->appointment->id)
-    <form action="{{route('medical_record.download')}}" method="POST">
-        @csrf
-
-        <input type="hidden" name="appointment_id" value="{{$mr_record->appointment->id}}">
-        <button type="submit" class="btn btn-sm btn-primary" target="_blank" download>
-           <i class="fa fa-download"></i> Download Report
-        </button>
-        </form>
-        </td>
-   @else
-   <td class="text-dark">No Report Uploaded</td>
-   @endif
-
-                        </tr>
-                    @endforeach
-                @endif
-            </tbody>
         </table>
     </div>
 </div>

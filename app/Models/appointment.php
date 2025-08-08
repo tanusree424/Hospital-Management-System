@@ -34,5 +34,9 @@ public function medical_record()
 {
     return $this->hasOne(Medical_records::class, 'appointment_id');
 }
+public function payment()
+{
+    return $this->hasOne(Payment::class);
+}
 
 }

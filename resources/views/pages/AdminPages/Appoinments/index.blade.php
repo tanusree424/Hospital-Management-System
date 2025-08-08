@@ -178,10 +178,12 @@
                         <th>#</th>
                         <th>Patient</th>
                         <th>Department</th>
-                        <th>Doctor</th>
+
                         <th>Status</th>
                         <th>Actions</th>
                         <th>Report</th>
+                        <th>Pay Now</th>
+                        <th>Download Receipt</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -194,7 +196,7 @@
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $appo->patient->user->name }}</td>
                             <td>{{ $appo->department->name }}</td>
-                            <td>{{ $appo->doctor->user->name }}</td>
+                            {{-- <td>{{ $appo->doctor->user->name }}</td> --}}
                             <td>
                                 <div class="dropdown">
                                     @if ($status === 'approved')
@@ -243,17 +245,17 @@
                             <td class="d-flex justify-content-center gap-1 flex-nowrap">
                                 <div>
                                     <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#viewModal{{ $appo->id }}">View</button>
+                                        data-bs-target="#viewModal{{ $appo->id }}"><i title="View Appointment" class="bi bi-eye"></i></button>
                                 </div>
                                 @if ($appo->status !== 'completed' && $appo->status !== 'cancelled')
                                     <div>
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#editModal{{ $appo->id }}">Edit</button>
+                                            data-bs-target="#editModal{{ $appo->id }}"><i title="Edit Doctor" class="bi bi-pencil"></i></button>
                                     </div>
                                 @else
                                     <div>
                                         <div>
-                                            <button class="btn btn-warning btn-sm" disabled>Edit</button>
+                                            <button class="btn btn-warning btn-sm" disabled><i class="bi bi-pencil"></i></button>
                                         </div>
                                 @endif
 
@@ -261,7 +263,7 @@
                                     <form action="{{ route('appointment.destroy', $appo->id) }}" method="POST"
                                         onsubmit="return confirm('Are you sure?');">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">Delete</button>
+                                        <button class="btn btn-danger btn-sm"><i title="Delete Doctor" class="bi bi-trash"></i></button>
                                     </form>
                                 @endif
                             </td>
@@ -293,6 +295,38 @@
                                     @endif
                                 @endif
                             </td>
+                            <td>
+
+                                @php
+                                    $payment = $payments->where('appointment_id', $appo->id)->WhereNotNull('transaction_id')->first();
+                                @endphp
+
+                                @if ($payment)
+                                    <button class="btn btn-success" disabled ><i class="bi bi-check-circle-fill" title="Already Paid" ></i></button>
+                                @else
+                                    <form action="{{ route('appointment.payment.process', $appo->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="appointment_id" value="{{ $appo->id }}">
+                                        <input type="hidden" name="patient_id" value="{{ $appo->patient->id }}">
+                                        <input type="hidden" name="payment_mode" value="online">
+                                        <button class="btn btn-outline-warning text-dark"> <i title="Pay Now" class="bi bi-wallet2 me-1"></i></button>
+                                    </form>
+                                @endif
+
+
+                            </td>
+                          <td>
+    @php
+        $payment = $payments->where('appointment_id', $appo->id)->whereNotNull('transaction_id')->first();
+    @endphp
+
+    @if ($payment)
+        <a href="{{ route('appointment.receipt.download', $appo->id) }}" class="btn btn-sm btn-outline-success" title="Download Receipt">
+            <i class="bi bi-receipt-cutoff me-1"></i> Receipt
+        </a>
+    @endif
+</td>
+
 
 
                         </tr>
@@ -438,27 +472,28 @@
         // ✅ Initialize DataTable
         $('#table_data').DataTable({
 
-        responsive: true,
-    scrollX: true,
-    paging: true,
-    dom: '<"d-flex justify-content-between align-items-center mb-3"lBf>rtip',
-                buttons: ['copy', 'excel', 'print'],
-                columnDefs: [
-                    { orderable: false, targets: [3] }
-                ],
-    lengthMenu: [
-        [5, 10, 25, 50, 100, -1],
-        [5, 10, 25, 50, 100, "All"]
-    ],
-                language: {
-                    search: "Search:",
-                    zeroRecords: "No matching patients found",
-                    info: "Showing _START_ to _END_ of _TOTAL_ patients",
-                    infoEmpty: "No patients available",
-                    infoFiltered: "(filtered from _MAX_ total patients)",
-                    lengthMenu: "Show _MENU_ entries"
-                }
-            });
+            responsive: true,
+            scrollX: false,
+            paging: true,
+            dom: '<"d-flex justify-content-between align-items-center mb-3"lBf>rtip',
+            buttons: ['copy', 'excel', 'print'],
+            columnDefs: [{
+                orderable: false,
+                targets: [5]
+            }],
+            lengthMenu: [
+                [5, 10, 25, 50, 100, -1],
+                [5, 10, 25, 50, 100, "All"]
+            ],
+            language: {
+                search: "Search:",
+                zeroRecords: "No matching patients found",
+                info: "Showing _START_ to _END_ of _TOTAL_ patients",
+                infoEmpty: "No patients available",
+                infoFiltered: "(filtered from _MAX_ total patients)",
+                lengthMenu: "Show _MENU_ entries"
+            }
+        });
         // ✅ Department change -> fetch corresponding doctors
         $('#department_id').on('change', function() {
             var departmentId = $(this).val();

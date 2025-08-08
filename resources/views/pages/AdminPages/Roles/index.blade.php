@@ -62,7 +62,7 @@
                                         @can('edit-role')
                                             <div>
                                                 <button data-bs-toggle="modal" data-bs-target="#editRoleModal{{ $role->id }}"
-                                                    class="btn btn-warning btn-sm">Edit</button>
+                                                    class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></button>
                                             </div>
                                         @endcan
 
@@ -71,7 +71,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button onclick="return confirm('Are you sure you want to delete this role?')"
-                                                    class="btn btn-danger btn-sm">Delete</button>
+                                                    class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
                                             </form>
                                         @endcan
                                     </td>

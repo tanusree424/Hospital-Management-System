@@ -8,7 +8,9 @@ use App\Models\Patient;
 use App\Models\Discharge;
 use App\Models\Ward;
 use App\Models\Bdes;
-
+use App\Models\Payment;
+use App\Models\User;
+use App\Models\Doctor;
 class Admission extends Model
 {
     use HasFactory;
@@ -31,5 +33,14 @@ class Admission extends Model
     {
         return $this->hasOne(Discharge::class);
     }
+   public function payments()
+{
+    return $this->hasMany(\App\Models\Payment::class);
+}
+public function doctor()
+{
+    return $this->belongsTo(Doctor::class);
+}
+
 
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileSetting\ProfileSettingController;
 use App\Http\Controllers\Hospital\HospitalController;
 use App\Http\Controllers\Discharge\DischargeController;
 use App\Http\Controllers\Feedback\FeedbackController;
+use App\Http\Controllers\Payments\PaymentController;
 
 
 
@@ -88,6 +89,14 @@ Route::resource('patients', PatientController::class);
 Route::resource('appointment', AppointmentController::class);
 Route::get('get-doctors', [AppointmentController::class, 'getDoctorsByDepartment']);
 Route::post('appointment/status-update', [AppointmentController::class, 'updateStatus'])->name('appointment.updateStatus');
+Route::get('/appointment/{id}/payment', [AppointmentController::class, 'showPayment'])->name('appointment.payment');
+Route::post('/appointment/{id}/payment', [AppointmentController::class, 'processPayment'])->name('appointment.payment.process');
+//Route::get('/appointment/{id}/payment-gateway', [AppointmentController::class, 'paymentGatewayPage'])->name('appointment.payment.gateway');
+Route::get('/appointment/{id}', [AppointmentController::class, 'show'])->name('appointment.show');
+Route::post('/appointment/payment/process/{id}', [AppointmentController::class, 'processPayment'])->name('appointment.payment.process');
+Route::post('/appointment/payment/success', [AppointmentController::class, 'paymentSuccess'])->name('appointment.payment.success');
+Route::get('/appointment/{id}/receipt/download', [AppointmentController::class, 'downloadReceipt'])
+    ->name('appointment.receipt.download');
 
 // Medical Record
 
@@ -106,6 +115,9 @@ Route::post('admission/create','\App\Http\Controllers\Admission\AdmissionControl
 Route::put('admission/update/{id}','\App\Http\Controllers\Admission\AdmissionController@update')->name('admissions.update');
 
 Route::get('/get-beds-by-ward', [AdmissionController::class, 'getBedsByWard'])->name('get.beds.by.ward');
+Route::get('/admission/{id}/print-receipt', [AdmissionController::class, 'printReceipt'])->name('admission.receipt.print');
+Route::get('/admission/{id}/receipt/download', [AdmissionController::class, 'downloadReceipt'])
+    ->name('admission.receipt.download');
 
 // ProfileSetting Routes
 
@@ -130,6 +142,24 @@ Route::put('hospital-management/upadte/medicine',[HospitalController::class,'med
 Route::delete('hospital-management/delete/{id}/medicine',[HospitalController::class,'medicinedestroy'])->name('hospital.management.medicine.destroy');
 Route::post('/discharges', [DischargeController::class, 'store'])->name('discharge.store');
 Route::post('/feedback/submit', [FeedbackController::class, 'store'])->name('admin.feedback.submit');
+
+
+//Payment Routes
+
+Route::get('/payments','\App\Http\Controllers\Payments\PaymentController@index')->name('payments.index');
+Route::get('/payments/{admission_id}/pay', [PaymentController::class, 'create'])->name('payments.create');
+Route::post('/payments/store', [PaymentController::class, 'store'])->name('payments.store');
+Route::post('/razorpay/success', [PaymentController::class, 'razorpaySuccess'])->name('razorpay.success');
+Route::post('/razorpay/pay-later', [PaymentController::class, 'razorpayPayLater'])->name('razorpay.payLater');
+Route::get('/razorpay/payment-info/{payment_id}', [PaymentController::class, 'paymentInfo']);
+Route::post('/admission/{id}/payment', [AdmissionController::class, 'processAdmissionPayment'])->name('admission.payment.process');
+Route::post('/admission/payment/store', [AdmissionController::class, 'storeAdmissionPayment'])->name('admission.payment.store');
+
+Route::post('/admission/payment/update/{id}', [AdmissionController::class, 'admissionPaymentUpdate'])
+    ->name('admission.payment.update');
+
+
+
 
 
 });

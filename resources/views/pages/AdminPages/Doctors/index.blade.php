@@ -226,9 +226,9 @@
 
                                         {{-- View Button --}}
                                         <div>
-                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#viewModal{{ $doctor->id }}">
-                                                View
+                                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal"
+                                               data-bs-target="#viewModal{{ $doctor->id }}">
+                                                <i class="bi bi-eye"  title="View Doctor"></i>
                                             </button>
                                         </div>
 
@@ -285,7 +285,7 @@
                                             <div>
                                                 <button data-bs-toggle="modal"
                                                     data-bs-target="#editDoctorModal{{ $doctor->id }}"
-                                                    class="btn btn-warning btn-sm">Edit</button>
+                                                    class="btn btn-outline-warning btn-sm"><i title="Edit Doctor Details" class="bi bi-pencil"></i></button>
                                                 <!-- Modal -->
                                                 @push('modals')
                                                     <div class="modal fade" id="editDoctorModal{{ $doctor->id }}"
@@ -461,7 +461,7 @@
                                                 onsubmit="return confirm('Are you sure you want to delete {{ $doctor->user->name }}?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i title="Delete Doctor" class="bi bi-trash"></i></button>
                                             </form>
                                         @endcan
 

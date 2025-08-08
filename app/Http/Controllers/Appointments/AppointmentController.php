@@ -12,7 +12,17 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Medical_records;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AppointmentBookedMail;
+use Twilio\Rest\Client;
+use Illuminate\Support\Str;
+use App\Models\Payment;
+use App\Models\User;
+use Razorpay\Api\Api;
 
+use Illuminate\Support\Facades\Log;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 class AppointmentController extends Controller
 {
     /**
@@ -24,6 +34,9 @@ class AppointmentController extends Controller
 
     $doctor = Doctor::where('user_id', $user->id)->first();
     $patient = Patient::where('user_id', $user->id)->first();
+    $payments = Payment::get();
+
+
 
     $isDoctor = false;
     $isPatient = false;
@@ -42,7 +55,7 @@ class AppointmentController extends Controller
             ->get();
     } else {
         // For Admin or other roles
-        $appointments = Appointment::latest('id')
+        $appointments = Appointment::with('payment')->latest('id')
             ->with('patient.user', 'doctor.user', 'department', 'medical_record')
             ->get();
     }
@@ -57,7 +70,8 @@ class AppointmentController extends Controller
         'doctors',
         'patients',
         'isDoctor',
-        'isPatient'
+        'isPatient',
+        'payments'
     ));
 }
 
@@ -105,44 +119,86 @@ public function getDoctorsByDepartment(Request $request)
         ->get();
 
     return response()->json($doctors);
-}
+    }
 
 
 
     /**
      * Store a newly created resource in storage.
      */
-  public function store(Request $request)
+
+public function store(Request $request)
 {
     $validate = Validator::make($request->all(), [
         "department_id" => "required",
-        "doctor_id" => "required",
+        "doctor_id" => "nullable",
         "patient_id" => "required",
         "appointment_date" => "required|date",
         "appointment_time" => "required|string|max:50"
     ]);
 
     if ($validate->fails()) {
-        return redirect()->route('appointment.create')->withErrors($validate)->withInput();
+        return redirect()->route('appointment.create')
+                         ->withErrors($validate)
+                         ->withInput();
     }
 
-    $appointments = DB::insert(
-        'insert into appointments (doctor_id, patient_id, department_id, appointment_date, appointment_time) values (?, ?, ?, ?, ?)',
-        [
-            $request->doctor_id,
-            $request->patient_id,
-            $request->department_id,
-            $request->appointment_date,
-            $request->appointment_time
-        ]
-    );
+    $appointmentNumber = 'APT-' . strtoupper(Str::random(6));
+    $patient_id  = $request->patient_id;
+    $appointmentId = DB::table('appointments')->insertGetId([
+       'doctor_id' => !empty($request->doctor_id) ? $request->doctor_id : 1,
+        'patient_id' => $request->patient_id,
+        'department_id' => $request->department_id,
+        'appointment_date' => $request->appointment_date,
+        'appointment_time' => $request->appointment_time,
+        'appointment_number' => $appointmentNumber,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-    if ($appointments) {
-        return redirect()->route('appointment.index')->with('success', 'Appointment created successfully');
+    $appointment = Appointment::with(['patient.user', 'doctor.user', 'department'])->find($appointmentId);
+
+    if ($appointment) {
+        // 📧 Email fallback logic
+        $fallbackEmail = "tbasuchoudhury@gmail.com";
+        $emailToSend = optional($appointment->patient->user)->email ?? $fallbackEmail;
+
+        try {
+            Mail::to($emailToSend)->send(new AppointmentBookedMail($appointment, $appointmentNumber));
+        } catch (\Exception $e) {
+            \Log::error("Email sending failed: " . $e->getMessage());
+        }
+
+        // 📲 WhatsApp via Twilio
+        try {
+            $whatsappMessage = "🙏 Thank you for Booking Appointment!\nAppointment No: $appointmentNumber\nhas been booked.\n\nTeam - Medinova Hospital";
+
+            $whatsappNumber = optional($appointment->patient)->phone ?? '9332819707';
+            $twilio = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
+
+            $twilio->messages->create(
+                "whatsapp:+91{$whatsappNumber}",
+                [
+                    'from' => env('TWILIO_WHATSAPP_FROM'),
+                    'body' => $whatsappMessage
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error("WhatsApp send failed: " . $e->getMessage());
+        }
+
+        // 🔁 Redirect to Razorpay Payment Page
+        return redirect()->route('appointment.payment', ['id' => $appointment->id  ,'patient_id' => $patient_id  ]);
     }
+
     return redirect()->route('appointment.create')->with('error', 'Failed to create appointment');
 }
+public function showPayment($id)
+{
+    $appointment = Appointment::with('doctor.user', 'department')->findOrFail($id);
 
+    return view('pages.AdminPages.Appoinments.payment', compact('appointment'));
+}
 
     /**
      * Display the specified resource.
@@ -183,6 +239,55 @@ public function update(Request $request, $id)
 
     return redirect()->back()->with('success', 'Appointment updated successfully.');
 }
+public function processPayment(Request $request, $id)
+{
+    $appointment = Appointment::findOrFail($id);
+
+    // Check if payment already exists for this appointment
+    $existingPayment = Payment::where('appointment_id', $appointment->id)
+        ->where('payment_status', 'Paid')
+        ->first();
+
+    if ($existingPayment) {
+        return redirect()->back()->with('info', 'Payment already completed for this appointment.');
+    }
+
+    // Razorpay credentials
+    $api_key = config('services.razorpay.key');
+    $api_secret = config('services.razorpay.secret');
+    $api = new Api($api_key, $api_secret);
+
+    // Razorpay order data
+    $orderData = [
+        'receipt' => 'RCPT-' . $appointment->appointment_number,
+        'amount' => 150000, // ₹1500 in paise
+        'currency' => 'INR',
+        'payment_capture' => 1
+    ];
+
+    // Create Razorpay order
+    $razorpayOrder = $api->order->create($orderData);
+
+    // Store the Razorpay order in DB with pending status
+    Payment::create([
+        'appointment_id' => $appointment->id,
+        'patient_id' => $appointment->patient->id ?? auth()->user()->patient->id ?? null,
+        'amount' => 1500,
+        'payment_status' => 'Pending',
+        'payment_method' => 'Razorpay',
+        'paid_at'=>now(),
+        'transaction_id' => $razorpayOrder->id, // Razorpay order ID
+    ]);
+
+    // Return the payment gateway blade
+    return view('pages.AdminPages.Appoinments.payment-gateway', [
+        'order' => $razorpayOrder,
+        'appointment' => $appointment,
+        'api_key' => $api_key,
+    ]);
+}
+
+
 
 
     /**
@@ -212,6 +317,87 @@ public function update(Request $request, $id)
     $appointment->save();
 
     return response()->json(['success' => true, 'status' => $appointment->status]);
+}
+public function paymentSuccess(Request $request)
+{
+    $appointmentId = $request->appointment_id;
+    $patientId = $request->patient_id;
+
+    // Find payment by appointment_id
+    $payment = Payment::where('appointment_id', $appointmentId)->first();
+
+    $data = [
+        'patient_id'        => $patientId,
+        'amount'            => 1500, // Or $request->amount if you send it
+        'payment_status'    => 'Paid',
+        'payment_method'    => 'Online',
+        'transaction_id'    => $request->razorpay_payment_id,
+        'paid_at'           => now(),
+        'notes'             => null, // Or set a value if needed
+        'updated_at'        => now(),
+    ];
+
+    if ($payment) {
+        // Update existing payment (keeping admission_id untouched)
+        $payment->update($data);
+    } else {
+        // Create new payment
+        $data['appointment_id'] = $appointmentId;
+        Payment::create($data);
+    }
+
+    return redirect()
+        ->route('appointment.index')
+        ->with('success', 'Payment successful.');
+}
+
+
+
+public function downloadReceipt($id)
+{
+    $appointment = Appointment::with('patient.user', 'doctor.user', 'payment')->findOrFail($id);
+
+    $payment = $appointment->payment;
+
+    if (!$payment || !$payment->transaction_id) {
+        return redirect()->back()->with('error', 'Payment not completed. Receipt cannot be downloaded.');
+    }
+
+    $pdf = Pdf::loadView('pages.AdminPages.Appoinments.receipt-pdf', compact('appointment', 'payment'));
+    return $pdf->download('appointment_receipt.pdf');
+}
+
+
+
+
+
+// public function handlePaymentSuccess(Request $request)
+// {
+//     // Optional: verify signature here
+
+//     Payment::create([
+//         'patient_id' => $request->patient_id,
+//         'admission_id' => null,
+//         'appointment_id' => $request->appointment_id,
+//         'amount' => $request->amount / 100,
+//         'payment_status' => 'Paid',
+//         'payment_method' => 'Razorpay',
+//         'transaction_id' => $request->razorpay_payment_id,
+//         'paid_at' => now(),
+//     ]);
+
+//     // $appointment = Appointment::find($request->appointment_id);
+//     // $appointment->payment_status = 'Paid';
+//     // $appointment->save();
+
+//     return redirect()->route('appointment.index')->with('success', 'Payment successful.');
+// }
+
+
+public function show($id)
+{
+    $appointment = Appointment::findOrFail($id);
+    return view('appointments.show', compact('appointment'));
 }
 
 

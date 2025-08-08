@@ -103,9 +103,10 @@
                                     <td>{{ \Carbon\Carbon::parse($permission->created_at)->timezone('asia/kolkata')->format('d-M-Y h:i A') }}
                                     </td>
                                     <td class="d-flex justify-content-center align-items-center gap-2">
-                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                        <div>
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
                                             data-bs-target="#editPermissionModal{{ $permission->id }}"
-                                            class="btn btn-warning">Edit</button>
+                                            class="btn btn-outline-warning"><i class="bi bi-pencil"></i></button> </div>
                                         <!-- Edit Permission -->
                                         @push('modals')
                                             <div class="modal fade" id="editPermissionModal{{ $permission->id }}"
@@ -179,7 +180,7 @@
                                             @method('DELETE')
                                             <button
                                                 onclick="return confirm('Are you sure you want to delete: {{ $permission->name }}?')"
-                                                class="btn btn-danger">Delete</button>
+                                                class="btn btn-outline-danger mt-2"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </td>
 
