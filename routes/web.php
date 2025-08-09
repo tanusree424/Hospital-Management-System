@@ -17,6 +17,7 @@ use App\Http\Controllers\Hospital\HospitalController;
 use App\Http\Controllers\Discharge\DischargeController;
 use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Payments\PaymentController;
+use App\Http\Controllers\Dashboard\DashboardController;
 
 
 
@@ -43,7 +44,7 @@ Route::get('/admin/logout',[AuthController::class,'logout'])->name('admin.logout
 
 //Role Routes
 Route::middleware('auth')->prefix('admin')->group(function () {
-    Route::get('dashboard',[AuthController::class,'dashboard'])->name('admin.dashboard');
+
    Route::get('roles',[RoleController::class,'index'])->name('role.index');
 Route::get('roles/create',[RoleController::class,'create'])->name('role.create');
 Route::post('roles',[RoleController::class,'store'])->name('role.store');
@@ -97,6 +98,8 @@ Route::post('/appointment/payment/process/{id}', [AppointmentController::class, 
 Route::post('/appointment/payment/success', [AppointmentController::class, 'paymentSuccess'])->name('appointment.payment.success');
 Route::get('/appointment/{id}/receipt/download', [AppointmentController::class, 'downloadReceipt'])
     ->name('appointment.receipt.download');
+Route::get('/appointments/data', [AppointmentController::class, 'getAppointments'])->name('appointments.data');
+
 
 // Medical Record
 
@@ -158,7 +161,7 @@ Route::post('/admission/payment/store', [AdmissionController::class, 'storeAdmis
 Route::post('/admission/payment/update/{id}', [AdmissionController::class, 'admissionPaymentUpdate'])
     ->name('admission.payment.update');
 
-
+  Route::get('dashboard',[DashboardController::class,'dashboard'])->name('admin.dashboard');
 
 
 

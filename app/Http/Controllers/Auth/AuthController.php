@@ -64,10 +64,7 @@ public function PostRegister(Request $request)
         }
       return redirect()->back()->withErrors(['email'=>'Invalid Credentials'])->withInput();
     }
-    public function dashboard()
-    {
-        return view('pages.dashboard');
-    }
+
    public function logout()
 {
     if (Auth::check()) {

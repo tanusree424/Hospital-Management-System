@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use App\Models\Payment;
 use App\Models\User;
 use Razorpay\Api\Api;
+use Yajra\DataTables\Facades\DataTables;
 
 use Illuminate\Support\Facades\Log;
 
@@ -74,6 +75,101 @@ class AppointmentController extends Controller
         'payments'
     ));
 }
+// public function index(Request $request)
+// {
+//     $user = auth()->user();
+//     $doctor = Doctor::where('user_id', $user->id)->first();
+//     $patient = Patient::where('user_id', $user->id)->first();
+
+//     $isDoctor = false;
+//     $isPatient = false;
+
+//     if ($patient) {
+//         $isPatient = true;
+//         $appointmentsQuery = Appointment::where('patient_id', $patient->id)
+//             ->with(['patient.user', 'doctor.user', 'department', 'medical_record', 'payment'])
+//             ->latest('id');
+//     } elseif ($doctor) {
+//         $isDoctor = true;
+//         $appointmentsQuery = Appointment::where('doctor_id', $doctor->id)
+//             ->with(['patient.user', 'doctor.user', 'department', 'medical_record', 'payment'])
+//             ->latest('id');
+//     } else {
+//         $appointmentsQuery = Appointment::with(['patient.user', 'doctor.user', 'department', 'medical_record', 'payment'])
+//             ->latest('id');
+//     }
+
+//     // ✅ If AJAX request → return JSON
+//     if ($request->ajax()) {
+//         return DataTables::of($appointmentsQuery)
+//     ->addColumn('patient', fn($row) => $row->patient->user->name ?? '')
+//     ->addColumn('department', fn($row) => $row->department->name ?? '')
+//     ->addColumn('status', fn($row) => view('appointments.partials.status', compact('row'))->render())
+//     ->addColumn('actions', fn($row) => view('appointments.partials.actions', compact('row'))->render())
+//     ->addColumn('report', fn($row) => view('appointments.partials.report', compact('row'))->render())
+//     ->addColumn('pay_now', fn($row) => view('appointments.partials.paynow', compact('row'))->render())
+//     ->addColumn('download_receipt', fn($row) => view('appointments.partials.download', compact('row'))->render())
+//     ->rawColumns(['status','actions','report','pay_now','download_receipt'])
+//     ->make(true);
+//     }
+
+//     // ✅ For normal page load → get actual collection so Blade has $appointments
+//     $appointments = $appointmentsQuery->get();
+
+//     $departments = Department::all();
+//     $doctors = Doctor::all();
+//     $patients = Patient::all();
+//     $payments = Payment::all();
+
+//     return view('pages.AdminPages.Appoinments.index', compact(
+//         'appointments',
+//         'departments',
+//         'doctors',
+//         'patients',
+//         'isDoctor',
+//         'isPatient',
+//         'payments'
+//     ));
+// }
+public function getAppointments()
+{
+    $userRole = auth()->user()->role->name; // ✅ define it here
+
+    $appointments = Appointment::with('doctor', 'patient')->get();
+
+    return datatables()->of($appointments)
+        ->addColumn('patient', fn($row) => $row->patient->user->name ?? '')
+        ->addColumn('department', fn($row) => $row->department->name ?? '')
+        ->addColumn('status', function($row) use ($userRole) {
+            $html = "<select class='form-select form-select-sm status-dropdown' data-id='{$row->id}'>";
+
+            if ($userRole === 'Patient' && is_null($row->cancelled_by)) {
+                $html .= "<option value='cancelled' " . ($row->status === 'cancelled' ? 'selected' : '') . ">Cancel</option>";
+            }
+            elseif ($userRole !== 'Patient') {
+                if ($row->status !== 'approved') {
+                    $html .= "<option value='approved' " . ($row->status === 'approved' ? 'selected' : '') . ">Approve</option>";
+                }
+                $html .= "<option value='completed' " . ($row->status === 'completed' ? 'selected' : '') . ">Completed</option>";
+                if (is_null($row->cancelled_by)) {
+                    $html .= "<option value='cancelled' " . ($row->status === 'cancelled' ? 'selected' : '') . ">Cancel</option>";
+                }
+            }
+
+            $html .= "</select>";
+            return $html;
+        })
+        ->addColumn('actions', fn($row) => '<button class="btn btn-primary btn-sm">View</button>')
+        ->addColumn('report', fn($row) => '<a href="#" class="btn btn-info btn-sm">Report</a>')
+        ->addColumn('pay_now', fn($row) => '<a href="#" class="btn btn-success btn-sm">Pay</a>')
+        ->addColumn('download_receipt', fn($row) => '<a href="#" class="btn btn-warning btn-sm">Download</a>')
+        ->rawColumns(['status', 'actions', 'report', 'pay_now', 'download_receipt'])
+        ->make(true);
+}
+
+
+
+
 
 
     /**
@@ -239,11 +335,58 @@ public function update(Request $request, $id)
 
     return redirect()->back()->with('success', 'Appointment updated successfully.');
 }
+// public function processPayment(Request $request, $id)
+// {
+//     $appointment = Appointment::findOrFail($id);
+
+//     // Check if payment already exists for this appointment
+//     $existingPayment = Payment::where('appointment_id', $appointment->id)
+//         ->where('payment_status', 'Paid')
+//         ->first();
+
+//     if ($existingPayment) {
+//         return redirect()->back()->with('info', 'Payment already completed for this appointment.');
+//     }
+
+//     // Razorpay credentials
+//     $api_key = config('services.razorpay.key');
+//     $api_secret = config('services.razorpay.secret');
+//     $api = new Api($api_key, $api_secret);
+
+//     // Razorpay order data
+//     $orderData = [
+//         'receipt' => 'RCPT-' . $appointment->appointment_number,
+//         'amount' => 150000, // ₹1500 in paise
+//         'currency' => 'INR',
+//         'payment_capture' => 1
+//     ];
+
+//     // Create Razorpay order
+//     $razorpayOrder = $api->order->create($orderData);
+
+//     // Store the Razorpay order in DB with pending status
+//     Payment::create([
+//         'appointment_id' => $appointment->id,
+//         'patient_id' => $appointment->patient->id ?? auth()->user()->patient->id ?? null,
+//         'amount' => 1500,
+//         'payment_status' => 'Pending',
+//         'payment_method' => 'Razorpay',
+//         'paid_at'=>now(),
+//         'transaction_id' => $razorpayOrder->id, // Razorpay order ID
+//     ]);
+
+//     // Return the payment gateway blade
+//     return view('pages.AdminPages.Appoinments.payment-gateway', [
+//         'order' => $razorpayOrder,
+//         'appointment' => $appointment,
+//         'api_key' => $api_key,
+//     ]);
+// }
 public function processPayment(Request $request, $id)
 {
     $appointment = Appointment::findOrFail($id);
 
-    // Check if payment already exists for this appointment
+    // ✅ Check if payment already exists and is Paid
     $existingPayment = Payment::where('appointment_id', $appointment->id)
         ->where('payment_status', 'Paid')
         ->first();
@@ -252,40 +395,64 @@ public function processPayment(Request $request, $id)
         return redirect()->back()->with('info', 'Payment already completed for this appointment.');
     }
 
-    // Razorpay credentials
+    // ✅ If "After Admission" button clicked
+    if ($request->payment_mode === 'after_admission') {
+        // Check if a pending payment already exists
+        $pendingPayment = Payment::where('appointment_id', $appointment->id)
+            ->where('payment_status', 'Pending')
+            ->first();
+
+        if (!$pendingPayment) {
+            Payment::create([
+                'appointment_id' => $appointment->id,
+                'patient_id'     => $appointment->patient->id ?? auth()->user()->patient->id ?? null,
+                'amount'         => 1500, // Can be dynamic
+                'payment_status' => 'Pending',
+                'payment_method' => 'After Admission',
+                'notes'          => 'Payment will be collected at the time of admission/appointment',
+            ]);
+        }
+
+        // Update appointment status if needed
+        $appointment->update(['payment_status' => 'Payment Pending']);
+
+        return redirect()
+            ->route('appointment.index', $appointment->id)
+            ->with('success', 'Payment marked as pending for this appointment.');
+    }
+
+    // ✅ Otherwise, process Razorpay Online Payment
     $api_key = config('services.razorpay.key');
     $api_secret = config('services.razorpay.secret');
     $api = new Api($api_key, $api_secret);
 
-    // Razorpay order data
     $orderData = [
-        'receipt' => 'RCPT-' . $appointment->appointment_number,
-        'amount' => 150000, // ₹1500 in paise
-        'currency' => 'INR',
+        'receipt'         => 'RCPT-' . $appointment->appointment_number,
+        'amount'          => 1500 * 100, // ₹1500 in paise
+        'currency'        => 'INR',
         'payment_capture' => 1
     ];
 
-    // Create Razorpay order
     $razorpayOrder = $api->order->create($orderData);
 
-    // Store the Razorpay order in DB with pending status
+    // Store the pending online payment
     Payment::create([
         'appointment_id' => $appointment->id,
-        'patient_id' => $appointment->patient->id ?? auth()->user()->patient->id ?? null,
-        'amount' => 1500,
+        'patient_id'     => $appointment->patient->id ?? auth()->user()->patient->id ?? null,
+        'amount'         => 1500,
         'payment_status' => 'Pending',
         'payment_method' => 'Razorpay',
-        'paid_at'=>now(),
-        'transaction_id' => $razorpayOrder->id, // Razorpay order ID
+        'transaction_id' => $razorpayOrder->id,
     ]);
 
-    // Return the payment gateway blade
+    // Show payment gateway page
     return view('pages.AdminPages.Appoinments.payment-gateway', [
-        'order' => $razorpayOrder,
+        'order'       => $razorpayOrder,
         'appointment' => $appointment,
-        'api_key' => $api_key,
+        'api_key'     => $api_key,
     ]);
 }
+
 
 
 
