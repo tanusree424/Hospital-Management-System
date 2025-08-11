@@ -10,20 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->unsignedBigInteger('appointment_id');
-            $table->foreign('appointment_id')->references('id')->on('appointments')->onDelete('cascade');
-              $table->timestamps();
-        });
-    }
+{
+    Schema::table('patients', function (Blueprint $table) {
+        $table->enum('status', ['active', 'deactive'])
+              ->default('active')
+              ->after('address'); // optional, kon column er pore rakhben
+    });
+}
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('patients', function (Blueprint $table) {
             //
         });
     }

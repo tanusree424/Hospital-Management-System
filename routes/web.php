@@ -17,6 +17,7 @@ use App\Http\Controllers\Hospital\HospitalController;
 use App\Http\Controllers\Discharge\DischargeController;
 use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Payments\PaymentController;
+use App\Http\Controllers\AdminDashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\DashboardController;
 
 
@@ -32,16 +33,25 @@ use App\Http\Controllers\Dashboard\DashboardController;
 |
 */
 
-Route::get('/', function () {
-    return view('index');
-});
+// Route::get('/', function () {
+//     return view('index');
+// })->name('home');
+Route::get('/', [DashboardController::class,'home'])->name('home');
 Route::get('/admin/register', [AuthController::class,'register'] )->name('admin.register');
 Route::post('/admin/register',[AuthController::class,'PostRegister'])->name('admin.registerpost');
 Route::get('/admin/login', [AuthController::class,'login'])->name('admin.login');
 Route::post('/admin/login',[AuthController::class,'loginPost'])->name('admin.loginpost');
 Route::get('/admin/logout',[AuthController::class,'logout'])->name('admin.logout');
 
-
+Route::get('/about',[DashboardController::class,'about'])->name('about');
+Route::get('/services',[DashboardController::class,'services'])->name('services');
+Route::get('/appointment/book',[DashboardController::class,'appointment'])->name('appointment');
+Route::get('/pricing',[DashboardController::class,'pricing'])->name('pricing');
+Route::get('/testimonial',[DashboardController::class,'testimonial'])->name('testimonial');
+Route::get('/get-doctors',[DashboardController::class,'getDoctorsByDepartment'])->name('doctors');
+Route::post('/store/appointment/guest' , [DashboardController::class,'storeGuest'])->name('guest.store');
+Route::get('/guest/payment', [Dashboardcontroller::class,'paymentPage'])->name('guest.payment');
+Route::post('/payment/razorpay/success', [DashboardController::class, 'razorpaySuccess'])->name('payment.razorpay.success');
 //Role Routes
 Route::middleware('auth')->prefix('admin')->group(function () {
 
@@ -161,7 +171,7 @@ Route::post('/admission/payment/store', [AdmissionController::class, 'storeAdmis
 Route::post('/admission/payment/update/{id}', [AdmissionController::class, 'admissionPaymentUpdate'])
     ->name('admission.payment.update');
 
-  Route::get('dashboard',[DashboardController::class,'dashboard'])->name('admin.dashboard');
+  Route::get('dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
 
 
 

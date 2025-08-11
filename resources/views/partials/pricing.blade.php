@@ -8,7 +8,7 @@
             <div class="owl-carousel price-carousel position-relative" style="padding: 0 45px 45px 45px;">
                 <div class="bg-light rounded text-center">
                     <div class="position-relative">
-                        <img class="img-fluid rounded-top" src="/assets/img/price-1.jpg" alt="">
+                        <img class="img-fluid rounded-top" src="{{asset('/assets/img/price-1.jpg')}}" alt="">
                         <div class="position-absolute w-100 h-100 top-50 start-50 translate-middle rounded-top d-flex flex-column align-items-center justify-content-center" style="background: rgba(29, 42, 77, .8);">
                             <h3 class="text-white">Pregnancy Care</h3>
                             <h1 class="display-4 text-white mb-0">

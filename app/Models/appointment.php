@@ -12,7 +12,7 @@ class appointment extends Model
 {
     use HasFactory;
     protected $table="appointments";
-    protected $fillable = ["doctor_id","patient_id","department_id","appointment_date","appointment_time","status"];
+    protected $fillable = ["doctor_id","patient_id","department_id","appointment_date","appointment_time","status", 'name','email','user_type'];
 
     public function department()
     {
