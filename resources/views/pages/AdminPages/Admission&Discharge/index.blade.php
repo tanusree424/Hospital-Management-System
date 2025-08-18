@@ -58,8 +58,9 @@
                                 <td>{{ $admission->patient->user->name }}</td>
                                 <td>{{ $admission->ward->name }}</td>
                                 <td>{{ optional($admission->bed)->bed_number ?? 'N/A' }}</td>
-
                                 <td>{{ \Carbon\Carbon::parse($admission->admission_date)->format('d-M-Y') }}</td>
+
+                                {{-- Status --}}
                                 <td>
                                     @if ($admission->discharge)
                                         <span class="badge bg-success">Discharged</span>
@@ -68,79 +69,83 @@
                                             Admitted</span>
                                     @endif
                                 </td>
-                                <td>
-                                    @if (!$admission->discharge)
-                                        <button class="btn btn-warning rounded-pill" data-bs-toggle="modal"
-                                            data-bs-target="#editAdmissionModal{{ $admission->id }}"><i
-                                                class="bi bi-pencil">Edit</i>
-                                        </button>
-                                    @else
-                                        <button class="btn btn-secondary rounded-pill" disabled><i
-                                                class="bi bi-pencil">Edit</i></button>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if (!$admission->discharge)
-                                        <button class="btn btn-danger btn-sm rounded-pill" data-bs-toggle="modal"
-                                            data-bs-target="#dischargeFormModal{{ $admission->id }}"> <i
-                                                class="bi bi-box-arrow-right me-1"> Discharge</i>
-                                        </button>
-                                    @else
-                                        <button class="btn btn-secondary btn-sm rounded-pill" disabled><i
-                                                class="bi bi-person-check-fill me-1"> Discharged</i> </button>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $payment = $admission->payments->first();
-                                    @endphp
 
+                                {{-- Edit --}}
+                                <td>
+                                    @if (!$admission->discharge)
+                                        <div>
+                                            <button class="btn btn-warning rounded-pill btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#editAdmissionModal{{ $admission->id }}">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                        </div>
+                                    @else
+                                        <div>
+                                            <button class="btn btn-secondary rounded-pill btn-sm" disabled>
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                        </div>
+                                    @endif
+                                </td>
+
+                                {{-- Discharge --}}
+                                <td>
+                                    @php $payment = $admission->payments->first(); @endphp
                                     @if ($admission->discharge === 0 && $payment && !$payment->transaction_id)
-                                        <button class="btn btn-success btn-sm pay-now-btn"
-                                            data-admission-id="{{ $admission->id }}"
-                                            data-amount="{{ $payment->amount ?? 1500 }}">
-                                            💳 Pay Now
-                                        </button>
+
+                                        <div class="badge bg-danger">Please Pay Before Discharge</div>
                                     @else
-                                        <button class="btn btn-secondary btn-sm" disabled> <i class="bi bi-currency-rupee">
-                                                Paid</i> </button>
+                                        <div class="text-center">
+                                            <button class="btn btn-danger btn-sm rounded-pill" data-bs-toggle="modal"
+                                                data-bs-target="#dischargeFormModal{{ $admission->id }}">
+                                                <i class="bi bi-box-arrow-right me-1"></i> Discharge
+                                            </button>
+                                        </div>
+                                    @endif
+
+                                </td>
+
+                                {{-- Payment --}}
+                                <td>
+                                    @php $payment = $admission->payments->first(); @endphp
+                                    @if ($admission->discharge === 0 && $payment && !$payment->transaction_id)
+                                        <div>
+                                            <button class="btn btn-success btn-sm pay-now-btn"
+                                                data-admission-id="{{ $admission->id }}"
+                                                data-amount="{{ $payment->amount ?? 1500 }}">
+                                                💳 Pay Now
+                                            </button>
+                                        </div>
+                                    @else
+                                        <div>
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="bi bi-currency-rupee"></i> Paid
+                                            </button>
+                                        </div>
                                     @endif
                                 </td>
+
+                                {{-- Print --}}
                                 <td>
-                                   @php
-    $payment = $admission->payments->first();
-@endphp
-
-@if ($admission->discharge === 0 && $payment && !$payment->transaction_id)
-    <button class="btn btn-success btn-sm pay-now-btn"
-        data-admission-id="{{ $admission->id }}"
-        data-amount="{{ $payment->amount ?? 1500 }}">
-        💳 Pay Now
-    </button>
-@elseif($admission->discharge === 0 && $payment && $payment->transaction_id)
-    <!-- Show Print Button -->
-    <a href="{{ route('admission.receipt.download', $admission->id) }}"
-       class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-printer"></i> Print Receipt
-    </a>
-@else
-    <!-- Payment not done -->
-    {{-- <button class="btn btn-secondary btn-sm" disabled>
-        <i class="bi bi-currency-rupee"></i> Paid
-    </button> --}}
-    <div class="badge bg-danger">Payment not done</div>
-@endif
-
-
+                                    @if ($payment && !$payment->transaction_id)
+                                        <span class="text-muted">N/A</span>
+                                    @elseif($payment && $payment->transaction_id)
+                                        <a href="{{ route('admission.receipt.download', $admission->id) }}"
+                                            class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-printer"></i> Print Receipt
+                                        </a>
+                                    @else
+                                        <div class="badge bg-danger">Payment not done</div>
+                                    @endif
                                 </td>
-
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center text-muted">No admission records found.</td>
+                                <td colspan="10" class="text-center text-muted">No admission records found.</td>
                             </tr>
                         @endforelse
                     </tbody>
+
                 </table>
             </div>
         </div>
@@ -161,7 +166,7 @@
                         @csrf
 
                         {{-- Patient Selection --}}
-                        @if ($user->hasRole('Patient'))
+                        {{-- @if ($user->hasRole('Patient'))
                             @php
                                 $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
                                     ->whereNull('discharge_date')
@@ -184,7 +189,22 @@
                                     <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
                                 @endforeach
                             </select>
+                        @endif --}}
+                        @if ($user->hasRole('Patient'))
+                            @php
+
+                                $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
+                                    ->where('discharge', 0) // still admitted
+                                    ->exists();
+                            @endphp
+
+                            @if ($alreadyAdmitted)
+                                <p>The patient is currently admitted.</p>
+                            @else
+                                <p>The patient is not admitted.</p>
+                            @endif
                         @endif
+
 
                         {{-- Admission Date --}}
                         <input type="date" name="admission_date" class="form-control" required>
@@ -334,7 +354,6 @@
         @endif
         @push('modals')
             <!-- Feedback Modal -->
-            <!-- Feedback Modal -->
             <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content p-3">
@@ -353,7 +372,9 @@
                                             <label for="star{{ $i }}">★</label>
                                         @endfor
                                     </div>
-                                    <input type="hidden" id="ratingValue" name="rating">
+                                    <!-- এই hidden input-এ patient_id দিবে -->
+                                    <input type="hidden" name="patient_id" id="patientIdInput"
+                                        value="{{ session('patient_id') ?? '' }}">
                                 </div>
                                 <div class="mb-3">
                                     <textarea class="form-control" id="message" rows="3" placeholder="Write your feedback..." required></textarea>
@@ -387,10 +408,9 @@
             dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
             buttons: ['copy', 'excel', 'print'],
             columnDefs: [{
-                    orderable: false,
-                    targets: [3]
-                } // Action column
-            ],
+                orderable: false,
+                targets: [6, 7, 8, 9]
+            }],
             lengthMenu: [
                 [5, 10, 25, 50, 100, -1],
                 [10, 25, 50, 100, "All"]
@@ -406,10 +426,104 @@
         });
 
 
-        $('.dataTables_filter input[type="search"]').addClass('form-control mb-3').attr("placeholder",
-            "Search...");
+        // $('.dataTables_filter input[type="search"]').addClass('form-control mb-3').attr("placeholder",
+        //     "Search...");
     });
 </script>
+{{-- <script>
+$(document).ready(function () {
+    var table = $('#table_data').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admissions.ajax') }}", // Your Laravel route returning JSON
+        columns: [
+            { data: 'patient_name', name: 'patient_name' },
+            { data: 'ward', name: 'ward' },
+            { data: 'bed', name: 'bed' },
+            { data: 'date', name: 'date' },
+            {
+                data: 'status',
+                name: 'status',
+                render: function (data, type, row) {
+                    let badgeClass = '';
+                    if (data === 'Admitted') badgeClass = 'bg-success';
+                    else if (data === 'Discharged') badgeClass = 'bg-secondary';
+                    else badgeClass = 'bg-warning';
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `<button class="btn btn-sm btn-primary editBtn" data-id="${data}">
+                                <i class="fa fa-edit"></i>
+                            </button>`;
+                }
+            },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `<button class="btn btn-sm btn-warning dischargeBtn" data-id="${data}">
+                                <i class="fa fa-sign-out-alt"></i>
+                            </button>`;
+                }
+            },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `<button class="btn btn-sm btn-info paymentBtn" data-id="${data}">
+                                <i class="fa fa-credit-card"></i>
+                            </button>`;
+                }
+            },
+            {
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `<button class="btn btn-sm btn-dark printBtn" data-id="${data}">
+                                <i class="fa fa-print"></i>
+                            </button>`;
+                }
+            }
+        ]
+    });
+
+    // Edit
+    $(document).on('click', '.editBtn', function () {
+        let id = $(this).data('id');
+        $('#editModal').modal('show');
+        // load data via AJAX
+    });
+
+    // Discharge
+    $(document).on('click', '.dischargeBtn', function () {
+        let id = $(this).data('id');
+        if (confirm('Are you sure you want to discharge this patient?')) {
+            // send AJAX request
+        }
+    });
+
+    // Payment
+    // $(document).on('click', '.paymentBtn', function () {
+    //     let id = $(this).data('id');
+    //     $('#paymentModal').modal('show');
+    //     // load payment form
+    // });
+
+    // // Print
+    // $(document).on('click', '.printBtn', function () {
+    //     let id = $(this).data('id');
+    //     window.open(`/patients/${id}/print`, '_blank');
+    // });
+});
+</script> --}}
 <script>
     $(document).ready(function() {
         $(document).on('change', '#edit_ward_id', function() {
@@ -450,13 +564,19 @@
 </script>
 <script>
     $(document).ready(function() {
-        // Show modal after successful discharge (can be conditional)
+
         @if (session('discharge_success'))
+            // modal ওপেন করো
             $('#feedbackModal').modal('show');
+
+            // session থেকে patient_id নিয়ে hidden input-এ বসাও
+            $('#patientIdInput').val('{{ session('patient_id') }}');
+
+            // Swal alert দেখাও
             Swal.fire({
                 icon: 'success',
                 title: 'Success!',
-                text: '{{ session('success') }}',
+                text: '{{ session('discharge_success') }}',
                 timer: 3000,
                 showConfirmButton: false
             });
@@ -476,28 +596,28 @@
             });
         });
 
-        // Handle feedback submission (AJAX or regular form)
+        // Handle feedback submission
         $('#feedbackForm').on('submit', function(e) {
             e.preventDefault();
 
             const rating = $('input[name="rating"]:checked').val();
             const message = $('#message').val();
-
-            console.log("Rating:", rating); // Debug here
-            console.log("Message:", message);
+            const patientId = $('#patientIdInput').val(); // hidden input থেকে patient_id নাও
+            console.log(patientId);
 
             $.post("{{ route('admin.feedback.submit') }}", {
                     _token: '{{ csrf_token() }}',
                     rating,
-                    message
+                    message,
+                    patientId
                 })
                 .done(function(response) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
-                        text: '{{ session('success') }}',
+                        text: 'Thank you for your feedback!',
                         confirmButtonColor: '#3085d6'
-                    })
+                    });
                     $('#feedbackModal').modal('hide');
                     $('#feedbackForm')[0].reset();
                 })
@@ -510,33 +630,44 @@
 </script>
 <script>
     $(document).ready(function() {
+
         $('#ward-select').on('change', function() {
             const wardId = $(this).val();
             const bedSelect = $('#bed-select');
-            bedSelect.empty().append('<option value="">Loading...</option>');
 
-            if (wardId) {
-                $.ajax({
-                    url: "{{ route('get.beds.by.ward') }}", // This should be a defined route
-                    type: "GET",
-                    data: {
-                        ward_id: wardId
-                    },
-                    success: function(response) {
-                        bedSelect.empty().append('<option value="">Select Bed</option>');
-                        if (response.length > 0) {
-                            response.forEach(function(bed) {
-                                bedSelect.append(
-                                    `<option value="${bed.id}">${bed.bed_number}</option>`
-                                );
-                            });
-                        } else {
-                            bedSelect.append('<option value="">No available beds</option>');
-                        }
-                    }
-                });
+            // Loading state
+            bedSelect.html('<option value="">Loading...</option>');
+
+            if (!wardId) {
+                bedSelect.html('<option value="">Select Bed</option>');
+                return;
             }
+
+            $.ajax({
+                url: "{{ route('get.beds.by.ward') }}",
+                type: "GET",
+                data: {
+                    ward_id: wardId
+                },
+                success: function(response) {
+                    bedSelect.empty().append('<option value="">Select Bed</option>');
+
+                    if (Array.isArray(response) && response.length > 0) {
+                        response.forEach(function(bed) {
+                            bedSelect.append(
+                                `<option value="${bed.id}">${bed.bed_number}</option>`
+                            );
+                        });
+                    } else {
+                        bedSelect.append('<option value="">No available beds</option>');
+                    }
+                },
+                error: function() {
+                    bedSelect.html('<option value="">Error loading beds</option>');
+                }
+            });
         });
+
     });
 </script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

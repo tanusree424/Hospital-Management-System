@@ -81,6 +81,8 @@
                 </div>
             </div>
         </div>
+        @can('See_total_patient')
+
 
         <!-- Patients -->
         <div class="col-md-4 col-lg-3">
@@ -95,6 +97,10 @@
                 </div>
             </div>
         </div>
+         @endcan
+         @can('see_total_appointment')
+
+
 
         <!-- Appointments -->
         <div class="col-md-4 col-lg-3">
@@ -109,6 +115,9 @@
                 </div>
             </div>
         </div>
+        @endcan
+        @can('see_total_bed')
+
 
         <!-- Beds -->
         <div class="col-md-4 col-lg-3">
@@ -123,6 +132,10 @@
                 </div>
             </div>
         </div>
+                @endcan
+        @can('see_total_ward')
+
+
 
         <!-- Wards -->
         <div class="col-md-4 col-lg-3">
@@ -137,6 +150,9 @@
                 </div>
             </div>
         </div>
+@endcan
+ @can('see_total_department')
+
 
         <!-- Departments -->
         <div class="col-md-4 col-lg-3">
@@ -151,6 +167,8 @@
                 </div>
             </div>
         </div>
+         @endcan
+@can('see_total_users')
 
         <!-- Users -->
         <div class="col-md-4 col-lg-3">
@@ -165,6 +183,9 @@
                 </div>
             </div>
         </div>
+@endcan
+@can('see_total_roles')
+
 
         <!-- Roles -->
         <div class="col-md-4 col-lg-3">
@@ -179,6 +200,9 @@
                 </div>
             </div>
         </div>
+@endcan
+@can('see_total_permissions')
+
 
         <!-- Permissions -->
         <div class="col-md-4 col-lg-3">
@@ -193,7 +217,7 @@
                 </div>
             </div>
         </div>
-
+@endcan
     </div>
 </div>
 @endsection

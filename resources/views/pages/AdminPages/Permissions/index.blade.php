@@ -76,8 +76,7 @@
 
 
 
-            <div class="col-md-8 mt-5 m-auto">
-                <table class="table table-bordered shadow-sm shadow align-middle table-stripped table-hover"
+                <table class="table table-bordered  table-stripped table-hover"
                     id="table_data">
                     <thead class="text-center table-dark">
                         <tr>
@@ -194,7 +193,7 @@
 
                     </tbody>
                 </table>
-            </div>
+
         </div>
     </div>
 @endsection
@@ -219,14 +218,14 @@
             ],
             lengthMenu: [
                 [5, 10, 25, 50, 100, -1],
-                [10, 25, 50, 100, "All"]
+                [5, 25, 50, 100, "All"]
             ],
             language: {
                 search: "Search:",
-                zeroRecords: "No matching users found",
-                info: "Showing _START_ to _END_ of _TOTAL_ users",
+                zeroRecords: "No matching permissions found",
+                info: "Showing _START_ to _END_ of _TOTAL_ permission",
                 infoEmpty: "No users available",
-                infoFiltered: "(filtered from _MAX_ total users)",
+                infoFiltered: "(filtered from _MAX_ total permissions)",
                 lengthMenu: "Show _MENU_ entries"
 
 

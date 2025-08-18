@@ -40,6 +40,19 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'admin'=>[
+            'driver'=>'session',
+            'provider'=>'admin'
+        ],
+        'doctor'=>[
+            'driver'=>'session',
+            'provider'=>'doctor',
+
+        ],
+        'patient'=>[
+            'driver'=>'session',
+            'provider'=>'patient'
+        ]
     ],
 
     /*
@@ -63,6 +76,19 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+
+        'admins'=>[
+            'driver'=>'eloquent',
+            'model'=> App\Models\Admin::class
+        ],
+        'doctors'=>[
+            'driver'=>'eloquent',
+            'model'=>App\Models\Doctor::class
+        ],
+        'patients'=>[
+            'driver'=>'eloquent',
+            'model'=>App\Models\Patient::class
         ],
 
         // 'users' => [
@@ -97,6 +123,18 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+        'doctors'=>[
+            'provider'=>'doctors',
+            'table' => 'password_reset_tokens',
+            'expire'=>60,
+            'throttle' => 60,
+        ],
+         'patients'=>[
+            'provider'=>'patients',
+            'table' => 'password_reset_tokens',
+            'expire'=>60,
+            'throttle' => 60,
+        ],
     ],
 
     /*
@@ -110,6 +148,6 @@ return [
     |
     */
 
-    'password_timeout' => 10800,
+    "password_timeout" => 10800
 
 ];

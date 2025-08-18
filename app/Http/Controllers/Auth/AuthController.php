@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Patient;
 use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
@@ -37,15 +38,30 @@ public function PostRegister(Request $request)
         'password' => Hash::make($request->password),
     ]);
 
+    // ✅ ডিফল্ট রোল Patient অ্যাসাইন করা
+    $user->assignRole('patient'); // Spatie Permission method
+    $patient = Patient::create([
+        'user_id'=> $user->id,
+        'DOB'=>$request->dob,
+        'pincode'=>$request->pincode,
+        'city'=>$request->city,
+        'state'=>$request->state,
+        'post_office'=>$request->post_office,
+        'country'=>$request->country,
+        'gender'=>$request->gender,
+        'phone'=>$request->phone,
+        'patient_image'=> $request->patient_image,
+        'address'=>$request->address,
+
+
+    ]);
+
     // ✅ Optional: Auto login after register
     // Auth::login($user);
 
-    // ✅ Optional: Assign Role
-    // $user->assignRole('Admin'); // if using Spatie
-
-    // ✅ Redirect to dashboard or wherever
     return redirect()->route('admin.login')->with('success', 'Registration successful!');
 }
+
 
     public function login()
     {

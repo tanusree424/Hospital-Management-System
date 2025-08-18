@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\appointment;
+use App\Models\feedback;
 
 class patient extends Model
 {
@@ -22,4 +23,9 @@ class patient extends Model
     {
         return $this->HasMany(appointment::class);
     }
+    public function feedback()
+    {
+        return $this->HasMany(feedback::class);
+    }
+
 }

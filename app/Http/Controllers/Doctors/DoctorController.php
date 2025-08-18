@@ -70,7 +70,7 @@ public function store(Request $request)
     }
 
     // ✅ Create doctor record
-    Doctor::create([
+   $doctor= Doctor::create([
         "user_id" => $user->id,
         "qualifications" => $request->qualifications,
         "phone" => $request->phone,
@@ -78,7 +78,10 @@ public function store(Request $request)
         "profile_picture" => $imagePath,
     ]);
 
-    return redirect()->route('doctors.index')->with('success', 'Doctor Created Successfully');
+   return redirect()
+    ->route('doctors.index')
+    ->with('success', "Doctor {$doctor->user->name} Profile Created Successfully");
+
 }
 
 

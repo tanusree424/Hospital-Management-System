@@ -73,7 +73,11 @@ public function store(Request $request)
     File::delete($pdfPath);
     Log::info("Temporary PDF file deleted.");
 
-    return redirect()->back()->with('discharge_success', 'Patient discharged successfully and email sent with summary.');
+    return redirect()->back()->with([
+    'discharge_success' => 'Patient discharged successfully and email sent with summary.',
+    'patient_id' => $admission->patient->id,  // অথবা $admission->patient_id
+]);
+
 }
 
 

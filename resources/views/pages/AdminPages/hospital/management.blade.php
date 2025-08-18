@@ -39,9 +39,13 @@
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
                         <h5 class="mb-0">Bed Management</h5>
+                        @can('add_bed_access')
+
+
                         <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addBedModal">
                             <i class="fa fa-plus me-1"></i> Add Bed
                         </button>
+                        @endcan
                     </div>
                     <div class="card-body table-responsive">
                         @if (session('bed_success'))
@@ -78,11 +82,16 @@
                                                 data-bs-target="#viewBedModal{{ $bed->id }}">
                                                 <i class="fa fa-eye"></i>
                                             </button>
+                                            @can('edit_bed_access')
+
 
                                             <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#editBedModal{{ $bed->id }}">
                                                 <i class="fa fa-edit"></i>
                                             </button>
+                                            @endcan
+                                            @can('delete_bed_access')
+
 
                                             <form action="{{ route('hospital.management.bed.destroy', $bed->id) }}"
                                                 method="POST" class="d-inline"
@@ -91,6 +100,7 @@
                                                 @method('DELETE')
                                                 <button class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
                                             </form>
+                                             @endcan
                                             @push('modals')
 
 

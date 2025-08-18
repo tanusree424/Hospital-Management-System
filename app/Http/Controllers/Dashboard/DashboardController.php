@@ -6,22 +6,99 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Doctor;
+
+
 use Illuminate\Support\Facades\Log;
 use App\Models\Appointment;
 use Carbon\Carbon;
 use Razorpay\Api\Api;
 use App\Models\Payment;
+use App\Models\Patient;
 use Illuminate\Support\Str;
+use App\Models\feedback;
+use App\Models\Service;
+use App\Models\Blog;
+use App\Models\Comment;
+
 
 
 class DashboardController extends Controller
 {
-    public function home()
-    {
-         $departments = Department::all();
+public function home()
+{
+    // All departments
+    $departments = Department::all();
 
-        return view('index', compact('departments'));
+    // Doctors with linked user
+    $doctors = Doctor::with('user')->get();
+
+    // Services
+    $services = Service::all();
+
+    // Blogs with author info + comments count
+    $blogs = Blog::with(['doctor.user', 'admin.user'])
+                 ->withCount('comments')   // each blog will have comments_count
+                 ->latest('id')
+                 ->get();
+
+    // All patients
+    $patients = Patient::with('user', 'feedback')->get();
+
+    // Only patients who have feedback
+    $feedbackPatients = Patient::with('user', 'feedback')
+                               ->has('feedback')
+                               ->get();
+
+    // Pass data to view
+    // return response()->json([
+    //     "blogs"=>$blogs
+
+    // ]);
+    return view('index', compact(
+        'departments',
+        'doctors',
+        'services',
+        'blogs',
+        'patients',
+        'feedbackPatients'
+    ));
+}
+
+
+public function search(Request $request)
+{
+    // Start with the Eloquent query builder (NOT a collection)
+    $query = Doctor::with(['user', 'department']);
+
+    // Filter by department
+    if ($request->filled('department_id') && $request->department_id !== 'all') {
+        $query->where('department_id', $request->department_id);
     }
+
+    // Keyword: search doctor name (users.name) OR qualifications
+    if ($request->filled('keyword')) {
+        $keyword = trim($request->keyword);
+
+        $query->where(function ($q) use ($keyword) {
+            $q->whereHas('user', function ($uq) use ($keyword) {
+                $uq->where('name', 'like', "%{$keyword}%");
+            })->orWhere('qualifications', 'like', "%{$keyword}%");
+        });
+    }
+
+    // Finally execute the query
+    $doctors = $query->latest()->get();
+
+    return view('pages.find-doctor-department', compact('doctors'));
+}
+
+
+public function bookAppointmentByDepartment($id)
+{
+    $department = Department::find($id);
+    return view('pages.bookAppointmentForDepartemnt', compact('department'));
+}
+
 
     public function about()
     {
@@ -35,6 +112,11 @@ class DashboardController extends Controller
     {
         $departments = Department::all();
         return view('pages.appointment', compact('departments'));
+    }
+    public function team()
+    {
+        $doctors =  Doctor::with('user')->get();
+        return view('pages.team', compact('doctors'));
     }
 public function storeGuest(Request $request)
 {
@@ -77,11 +159,14 @@ public function getDoctorsByDepartment(Request $request)
 
     public function pricing()
     {
-        return view('pages.pricing');
+        $departments = Department::all();
+        return view('pages.pricing', compact('departments'));
     }
     public function testimonial()
     {
-        return view('pages.patients');
+        $patients = Patient::with('user', 'feedback')->get();
+    $feedbackPatients = Patient::with('user', 'feedback')->has('feedback')->get();
+        return view('pages.patients' ,compact('patients', 'feedbackPatients'));
     }
     public function paymentPage()
     {
@@ -135,4 +220,78 @@ public function getDoctorsByDepartment(Request $request)
         return redirect()->route('home')->with('error', 'Payment could not be processed.');
     }
 }
+public function patients()
+{
+ $patients  = Patients::all();
+ return view();
+}
+
+public function findSingleBlog($slug)
+{
+    $blogs = Blog::with('comments.user') // eager load comments + user
+                ->where('slug', $slug)
+                ->first();
+
+    if (!$blogs) {
+        return redirect()->back()->with('error', 'Blog not found.');
+    }
+
+    $blogs->increment('views');
+    // return response()->json([
+    //     "blogs"=>$blogs
+    // ]);
+    $comments = Comment::where('blog_id', $blogs->id)->get();
+    // return response()->json([
+    //     "comments"=>$comments
+    // ]);
+
+    return view('pages.SingleBlog', compact('blogs','comments'));
+}
+public function storeComment(Request $request, $blogId)
+{
+    $request->validate([
+        'content' => 'required|string|max:500',
+        'guest_name' => 'nullable|string|max:100',
+        'guest_email' => 'nullable|email|max:150'
+    ]);
+
+    $blog = Blog::findOrFail($blogId);
+
+
+    $comment = new Comment();
+    $comment->blog_id = $blog->id;
+    $comment->content = $request->content;
+
+    if (auth()->check()) {
+        // logged in user
+        $comment->user_id = auth()->id();
+    } else {
+        // guest user
+        $comment->name = $request->guest_name ?? 'Anonymous';
+        $comment->email = $request->guest_email;
+    }
+
+    $comment->save();
+    // $blog->update([
+    //     'comments'=>$comment->id
+    // ]);
+    return redirect()
+        ->route('blog.slug', $blog->slug)
+        ->with('success', 'Your comment has been added!');
+}
+
+public function allBlogs()
+{
+     $blogs = Blog::with(['doctor.user', 'admin.user'])
+                 ->withCount('comments')   // each blog will have comments_count
+                 ->latest('id')
+                 ->get();
+                 return view('pages.blogs', compact('blogs'));
+}
+
+public function searchBlog()
+{
+    return view('pages.search');
+}
+
 }

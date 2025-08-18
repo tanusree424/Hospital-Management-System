@@ -61,6 +61,14 @@
             </a>
         </li>
         @endcan
+         {{-- Appointment Management --}}
+        @can('Appointment Show')
+        <li class="nav-item">
+            <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.index') ? 'active' : '' }}" style="font-size: 13px;">
+                <i class="bi bi-gear-fill me-2"></i> Services
+            </a>
+        </li>
+        @endcan
 
         {{-- Patient Management --}}
         @can('View Patient')
@@ -72,7 +80,7 @@
         @endcan
 
         {{-- Admission & Discharge --}}
-        @can('access_admission')
+        @can('admission_discharge_access')
         <li class="nav-item">
             <a href="{{ route('admission.index') }}" class="nav-link {{ request()->routeIs('admission.index') ? 'active' : '' }}" style="font-size: 13px;">
                 <i class="fa fa-sign-in-alt me-2"></i> Admission / Discharge
@@ -106,13 +114,30 @@
             </a>
         </li>
         @endcan
-        @can('access_profile_settinf')
+        @can('Profile Setting_access')
         <li class="nav-item">
             <a href="{{ route('admin.profile_setting') }}" class="nav-link {{ request()->routeIs('admin.profile_setting') ? 'active' : '' }}" style="font-size: 13px;">
                 <i class="fas fa-user me-2"></i> Profile Setting
             </a>
         </li>
         @endcan
+        @can('feedback_access')
+             <li class="nav-item">
+            <a href="{{ route('admin.feedbacks.index') }}" class="nav-link {{ request()->routeIs('admin.feedbacks.index') ? 'active' : '' }}" style="font-size: 13px;">
+                <i class="fas fa-comment-dots me-2"></i>
+                 Feedback
+            </a>
+        </li>
+        @endcan
+        @can('access_blog')
+             <li class="nav-item">
+            <a href="{{ route('admin.blogs.index') }}" class="nav-link {{ request()->routeIs('admin.blogs.index') ? 'active' : '' }}" style="font-size: 13px;">
+               <i class="bi bi-journal-text"></i>
+                 Blogs
+            </a>
+        </li>
+        @endcan
+
 
         {{-- Logout --}}
         <li class="nav-item">

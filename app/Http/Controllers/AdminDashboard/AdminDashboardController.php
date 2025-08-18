@@ -17,15 +17,36 @@ class AdminDashboardController extends Controller
 {
 public function dashboard()
 {
+    $user = auth()->user();
+
+    // Initialize counts
     $doctorsCount = Doctor::count();
-    $patientsCount = Patient::count();
-    $appointmentsCount = Appointment::count();
     $bedsCount = Bed::count();
     $wardsCount = Ward::count();
     $departmentsCount = Department::count();
     $usersCount = User::count();
     $rolesCount = Role::count();
     $permissionsCount = Permission::count();
+
+    if ($user->hasRole('Patient')) {
+        $appointmentsCount = Appointment::where('patient_id', $user->patient->id)->where('status' , '!=' , 'Completed')->count();
+        $patientsCount = 1; // Only themselves
+
+    } elseif ($user->hasRole('Doctor')) {
+        $doctorId = $user->doctor->id;
+
+        $appointmentsCount = Appointment::where('doctor_id', $doctorId)->where('status', '!=' ,'Completed')->count();
+
+        $patientsCount = Patient::whereHas('appointment', function($query) use ($doctorId) {
+            $query->where('doctor_id', $doctorId)
+                  ->where('status', '!=', 'Completed');
+        })->count();
+
+    } else {
+        // Admin or other roles
+        $appointmentsCount = Appointment::count();
+        $patientsCount = Patient::count();
+    }
 
     return view('pages.dashboard', compact(
         'doctorsCount',
@@ -39,6 +60,8 @@ public function dashboard()
         'permissionsCount'
     ));
 }
+
+
 
 
 }

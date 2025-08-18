@@ -174,17 +174,17 @@
             <table class="table table-bordered shadow table-striped table-hover display nowrap" id="table_data"
                 style="width:100%">
                 <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Patient</th>
-            <th>Department</th>
-            <th>Status</th>
-            <th>Actions</th>
-            <th>Report</th>
-            <th>Pay Now</th>
-            <th>Download Receipt</th>
-        </tr>
-    </thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                        <th>Report</th>
+                        <th>Pay Now</th>
+                        <th>Download Receipt</th>
+                    </tr>
+                </thead>
                 <tbody>
                     @forelse ($appointments as $index => $appo)
                         @php
@@ -193,7 +193,7 @@
                         @endphp
                         <tr class="text-center">
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $appo->patient->user->name }}</td>
+                            <td>{{ $appo->patient?->user?->name ?? 'Guest' }}</td>
                             <td>{{ $appo->department->name }}</td>
                             {{-- <td>{{ $appo->doctor->user->name }}</td> --}}
                             <td>
@@ -310,11 +310,13 @@
                                 @if ($payment)
                                     <button class="btn btn-success" disabled><i class="bi bi-check-circle-fill"
                                             title="Already Paid"></i></button>
+                                @elseif ($appo->status === "cancelled")
+                                        <div class="badge bg-danger">Appointment Cancelled</div>
                                 @else
                                     <form action="{{ route('appointment.payment.process', $appo->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="appointment_id" value="{{ $appo->id }}">
-                                        <input type="hidden" name="patient_id" value="{{ $appo->patient->id }}">
+                                        <input type="hidden" name="patient_id" value="{{ $appo->patient?->id ?? '' }}">
                                         <input type="hidden" name="payment_mode" value="online">
                                         <button class="btn btn-outline-warning text-dark"> <i title="Pay Now"
                                                 class="bi bi-wallet2 me-1"></i></button>
@@ -356,11 +358,11 @@
                                         <div class="modal-body bg-light-subtle">
                                             <div class="row">
                                                 <div class="col-md-6 text-center">
-                                                    <img src="{{ asset('storage/' . $appo->patient->patient_image) }}"
+                                                    <img src="{{ $appo->patient?->patient_image ? asset('storage/' . $appo->patient->patient_image) : asset('default-avatar.png') }}"
                                                         class="rounded-circle shadow" width="180" height="180"
                                                         style="object-fit:cover;">
                                                     <p class="mt-3"><strong>Patient:</strong>
-                                                        {{ $appo->patient->user->name }}
+                                                        {{ $appo->patient->user->name ?? 'N/A' }}
                                                     </p>
                                                     <p><strong>Date:</strong>
                                                         {{ \Carbon\Carbon::parse($appo->appointment_date)->format('d M, Y') }}
@@ -483,31 +485,22 @@
 
         // ✅ Initialize DataTable
 
- $('#table_data').DataTable({
-    // processing: true,
-    // serverSide: true,
-    // // ajax: '/appointments/data',
-    // columns: [
-    //     { data: 'id', name: 'id' },
-    //     { data: 'patient', name: 'patient' },
-    //     { data: 'department', name: 'department' },
-    //     { data: 'status', name: 'status' },
-    //     { data: 'actions', name: 'actions', orderable: false, searchable: false },
-    //     { data: 'report', name: 'report', orderable: false, searchable: false },
-    //     { data: 'pay_now', name: 'pay_now', orderable: false, searchable: false },
-    //     { data: 'download_receipt', name: 'download_receipt', orderable: false, searchable: false }
-    // ]
+        $('#table_data').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: '{{ route("appointments.data") }}',
+
+    columns: [
+        { data: 'id', name: 'id' },
+        { data: 'patient', name: 'patient' },
+        { data: 'department', name: 'department' },
+        { data: 'status', name: 'status' },
+        { data: 'actions', name: 'actions', orderable: false, searchable: false },
+        { data: 'report', name: 'report', orderable: false, searchable: false },
+        { data: 'pay_now', name: 'pay_now', orderable: false, searchable: false },
+        { data: 'download_receipt', name: 'download_receipt', orderable: false, searchable: false }
+    ]
 });
-
-
-
-
-
-
-
-
-
-
 
 
         // ✅ Department change -> fetch corresponding doctors
@@ -539,21 +532,49 @@
             }
         });
 
+        // // ✅ Appointment status change via click
+        // $('.status-option').on('click', function(e) {
+        //     e.preventDefault();
+        //     $.post("{{ route('appointment.updateStatus') }}", {
+        //         _token: '{{ csrf_token() }}',
+        //         id: $(this).data('id'),
+        //         status: $(this).data('status')
+        //     }, function(res) {
+        //         if (res.success) {
+        //             location.reload();
+        //         } else {
+        //             alert("Update failed");
+        //         }
+        //     });
+        // });
         // ✅ Appointment status change via click
-        $('.status-option').on('click', function(e) {
-            e.preventDefault();
-            $.post("{{ route('appointment.updateStatus') }}", {
-                _token: '{{ csrf_token() }}',
-                id: $(this).data('id'),
-                status: $(this).data('status')
-            }, function(res) {
-                if (res.success) {
-                    location.reload();
-                } else {
-                    alert("Update failed");
-                }
-            });
-        });
+$(document).on('click', '.status-option', function(e) {
+    e.preventDefault();
+
+    let id = $(this).data('id');
+    let status = $(this).data('status');
+
+    $.post("{{ route('appointment.updateStatus') }}", {
+        _token: '{{ csrf_token() }}',
+        id: id,
+        status: status
+    }, function(res) {
+        if (res.success) {
+            // Option 1: reload page
+            location.reload();
+
+            // Option 2: refresh only DataTable (better UX)
+            // $('#table_data').DataTable().ajax.reload(null, false);
+        } else {
+            alert("Update failed");
+        }
+    }).fail(function(xhr) {
+        console.error(xhr.responseText);
+        alert('Error updating status');
+    });
+});
+
+
 
     });
 </script>

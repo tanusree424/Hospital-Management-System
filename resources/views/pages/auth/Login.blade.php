@@ -59,7 +59,7 @@
 
                     <!-- Forgot password -->
                     <div class="text-center">
-                        <a href="#" class="text-decoration-none text-muted">Forgot your password?</a>
+                        <a href="{{route('password.request')}}" class="text-decoration-none text-muted">Forgot your password?</a>
                     </div>
                 </form>
             </div>

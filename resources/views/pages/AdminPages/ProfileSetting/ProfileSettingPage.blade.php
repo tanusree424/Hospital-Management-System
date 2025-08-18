@@ -50,11 +50,24 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Profile Picture</label>
                             <input type="file" name="profile_image" class="form-control">
-                            @if ($extra && isset($extra->profile_picture))
+                            @if ($extra && isset($extra->patient_image) && auth()->user()->hasRole('Patient'))
                                 <div class="mt-2">
+
+                                    <img src="{{ asset('storage/' . $extra->patient_image) }}"  width="80" class="rounded-circle shadow border">
+                                </div>
+                            @elseif ($extra && isset($extra->profile_picture) && auth()->user()->hasRole('Doctor'))
+                             <div class="mt-2">
+
                                     <img src="{{ asset('storage/' . $extra->profile_picture) }}"  width="80" class="rounded-circle shadow border">
                                 </div>
+                            @else
+                             <div class="mt-2">
+
+                                    <img src="{{ asset('storage/' . $extra->profile_picture) }}"  width="80" class="rounded-circle shadow border">
+                                </div>
+
                             @endif
+
                         </div>
 
                         {{-- Role-specific Fields --}}

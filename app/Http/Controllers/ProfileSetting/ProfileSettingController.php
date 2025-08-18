@@ -34,33 +34,46 @@ class ProfileSettingController extends Controller
 
 public function update(Request $request)
 {
-    $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:users,email,' . auth()->id(),
-        'phone' => 'nullable',
-        'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    $user = auth()->user();
 
-        // For Patient
-        'dob' => 'nullable|date',
-        'gender' => 'nullable|in:male,female,other',
-        'patient_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'address' => 'nullable|string|max:255',
+    // Base validation for all users
+    $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'phone' => 'nullable|string|max:20',
+        'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ];
+
+    // Role-specific validation
+    if ($user->hasRole('Doctor')) {
+        $rules['qualifications'] = 'nullable|string|max:255';
+        $rules['department_id'] = 'nullable|exists:departments,id';
+    }
+
+    if ($user->hasRole('Patient')) {
+        $rules['dob'] = 'nullable|date';
+        $rules['gender'] = 'nullable|in:male,female,other';
+        $rules['profile_image'] = 'nullable|image|mimes:jpg,jpeg,png|max:2048';
+        $rules['address'] = 'nullable|string|max:255';
+    }
+
+    $request->validate($rules);
+
+    // Update basic user info
+    $user->update([
+        'name' => $request->name,
+        'email' => $request->email,
     ]);
 
-    $user = auth()->user();
-    $user->name = $request->name;
-    $user->email = $request->email;
-    $user->save();
-
-    // Handle file uploads
+    // Upload files only if provided (avoids tmp paths in DB)
     $profileImagePath = null;
     if ($request->hasFile('profile_image')) {
         $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
     }
 
     $patientImagePath = null;
-    if ($request->hasFile('patient_image')) {
-        $patientImagePath = $request->file('patient_image')->store('patient_images', 'public');
+    if ($request->hasFile('profile_image')) {
+        $patientImagePath = $request->file('profile_image')->store('patient_image', 'public');
     }
 
     // Role-based updates
@@ -69,35 +82,44 @@ public function update(Request $request)
             ['user_id' => $user->id],
             [
                 'phone' => $request->phone,
-                'profile_picture' => $profileImagePath ?? $user->admin->profile_picture ?? null,
+                // Keep old image if no new one uploaded
+                'profile_picture' => $profileImagePath ?? $user->admin?->profile_picture,
             ]
         );
-    } elseif ($user->hasRole('Doctor')) {
+    }
+    elseif ($user->hasRole('Doctor')) {
         $user->doctor()->updateOrCreate(
             ['user_id' => $user->id],
             [
                 'phone' => $request->phone,
-                'profile_picture' => $profileImagePath ?? $user->doctor->profile_picture ?? null,
+                'profile_picture' => $profileImagePath ?? $user->doctor?->profile_picture,
                 'qualifications' => $request->qualifications,
                 'department_id' => $request->department_id,
             ]
         );
     }
     elseif ($user->hasRole('Patient')) {
-            $user->patient()->updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'phone' => $request->phone,
-                    'dob' => $request->dob,
-                    'gender' => $request->gender,
-                    'address' => $request->address,
-                    'patient_image' => $patientImagePath ?? $user->patient->patient_image ?? null,
-                ]
-            );
-        }
-
-        return back()->with('success', 'Profile updated successfully.');
+        $user->patient()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'phone' => $request->phone,
+                'dob' => $request->dob,
+                'gender' => $request->gender,
+                'address' => $request->address,
+                'patient_image' => $patientImagePath ?? $user->patient?->patient_image,
+            ]
+        );
     }
+
+    // Response
+    if ($request->ajax()) {
+        return response()->json(['success' => 'Profile updated successfully.']);
+    }
+
+    return back()->with('success', 'Profile updated successfully.');
+}
+
+
 
 
 

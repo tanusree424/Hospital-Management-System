@@ -19,6 +19,8 @@ use App\Http\Controllers\Feedback\FeedbackController;
 use App\Http\Controllers\Payments\PaymentController;
 use App\Http\Controllers\AdminDashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Services\ServiceController;
+use App\Http\Controllers\Blog\BlogController;
 
 
 
@@ -42,16 +44,31 @@ Route::post('/admin/register',[AuthController::class,'PostRegister'])->name('adm
 Route::get('/admin/login', [AuthController::class,'login'])->name('admin.login');
 Route::post('/admin/login',[AuthController::class,'loginPost'])->name('admin.loginpost');
 Route::get('/admin/logout',[AuthController::class,'logout'])->name('admin.logout');
+// Forgot password form
+Route::get('admin/forgot-password', [App\Http\Controllers\ForgetPassword\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('admin/forgot-password', [App\Http\Controllers\ForgetPassword\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
+// Reset password
+Route::get('admin/reset-password/{token}', [App\Http\Controllers\ForgetPassword\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('admin/reset-password', [App\Http\Controllers\ForgetPassword\ResetPasswordController::class, 'reset'])->name('password.update');
+Route::get('/blog/{slug}', [DashboardController::class,'findSingleBlog'])->name('blog.slug');
+Route::post('/comment/{blogId}',[DashboardController::class, 'storeComment'])->name('comments.store');
+Route::get('/find-doctor/search', [DashboardController::class, 'search'])
+->name('find.doctor.search');
+Route::get('/all/blogs', [DashboardController::class,'allBlogs'])->name('allBlogs');
+Route::get('/search', [DashboardController::class ,'searchBlog'])->name('search.page');
 Route::get('/about',[DashboardController::class,'about'])->name('about');
 Route::get('/services',[DashboardController::class,'services'])->name('services');
 Route::get('/appointment/book',[DashboardController::class,'appointment'])->name('appointment');
+Route::get('/team', [DashboardController::class , 'team'])->name('team');
 Route::get('/pricing',[DashboardController::class,'pricing'])->name('pricing');
 Route::get('/testimonial',[DashboardController::class,'testimonial'])->name('testimonial');
 Route::get('/get-doctors',[DashboardController::class,'getDoctorsByDepartment'])->name('doctors');
 Route::post('/store/appointment/guest' , [DashboardController::class,'storeGuest'])->name('guest.store');
 Route::get('/guest/payment', [Dashboardcontroller::class,'paymentPage'])->name('guest.payment');
 Route::post('/payment/razorpay/success', [DashboardController::class, 'razorpaySuccess'])->name('payment.razorpay.success');
+Route::get('/appointment/department/{id}/book', [DashboardController::class,'bookAppointmentByDepartment'])->name('appointment.dept.book');
+//Route::get('/services', [DashboardController::class, 'index'])->name('services.index');
 //Role Routes
 Route::middleware('auth')->prefix('admin')->group(function () {
 
@@ -132,6 +149,7 @@ Route::get('/admission/{id}/print-receipt', [AdmissionController::class, 'printR
 Route::get('/admission/{id}/receipt/download', [AdmissionController::class, 'downloadReceipt'])
     ->name('admission.receipt.download');
 
+
 // ProfileSetting Routes
 
 Route::get('/profile-setting', '\App\Http\Controllers\ProfileSetting\ProfileSettingController@index')->name('admin.profile_setting');
@@ -173,7 +191,23 @@ Route::post('/admission/payment/update/{id}', [AdmissionController::class, 'admi
 
   Route::get('dashboard',[AdminDashboardController::class,'dashboard'])->name('admin.dashboard');
 
+//  Feedback Routes
 
+Route::get('/feedbacks' , [FeedbackController::class,'index'])->name('admin.feedbacks.index');
+Route::delete('/feedback/{id}' ,[FeedbackController::class, 'removeFeedback'])->name('admin.feedback.delete');
 
+//Services Routes
+Route::get('/services', [ServiceController::class,'index'])->name('admin.services.index');
+Route::post('/services',[ServiceController::class,'store'])->name('admin.services.store');
+Route::put('/services/{id}' , [ServiceController::class , 'update'])->name('admin.services.update');
+Route::delete('/services/{id}' , [ServiceController::class , 'destroy'])->name('admin.services.destroy');
+
+// Blogs Routes
+
+Route::get('blogs', [BlogController::class ,'index'] )
+->name('admin.blogs.index');
+Route::post('blogs' , [BlogController::class ,'store'])->name('admin.blogs.store');
+Route::put('blogs/{id}', [BlogController::class,'update'])->name('admin.blogs.update');
+Route::delete('blogs/{id}', [BlogController::class,'destroy'])->name('admin.blogs.delete');
 });
 

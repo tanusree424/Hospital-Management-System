@@ -22,7 +22,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ route('departments.store') }}" method="POST">
+                                <form action="{{ route('departments.store') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
                                     <div class="mb-3">
                                         <div class="row">
@@ -53,7 +53,27 @@
                                         @enderror
                                     </div>
                                     <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="" class="form-label">Price</label>
 
+                                            </div>
+                                            <div class="col-md-8">
+                                                <input type="number" name="price" id="" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="" class="form-label">Department Image</label>
+
+                                            </div>
+                                            <div class="col-md-8">
+                                                <input type="file" name="department_image" id=""
+                                                    class="form-control">
+                                            </div>
+                                        </div>
                                     </div>
 
                             </div>
@@ -75,7 +95,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-            <div class="col-md-7 m-auto">
+            <div class="col-md-12 m-auto">
                 <table class="table table-bordered shadow  table-striped shadow-sm align-middle text-center"
                     id="table_data">
                     <thead class="table-dark text-center">
@@ -112,12 +132,17 @@
                                                 <div class="modal-dialog modal-xl">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
+
                                                             <h5 class="modal-title" id="viewModalLabel{{ $dept->id }}">
                                                                 {{ $dept->name }}</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
+                                                               <div class="img-fluid mb-2">
+                                                                <img src="{{asset('storage/'.$dept->department_image)}}" class="img-thumbnail" alt="">
+                                                                </div>
+                                                                <hr>
                                                             <h4>Department Name: {{ $dept->name }}</h4>
                                                             <h4>Description</h4>
                                                             <p>
@@ -135,8 +160,8 @@
                                                 class="btn btn-warning"><i class="bi bi-pencil">Edit</i></button>
                                             <!-- Modal -->
                                             @push('modals')
-                                                <div class="modal fade" id="editDepartmentModal{{ $dept->id }}" tabindex="-1"
-                                                    aria-labelledby="editDepartmentModalLabel{{ $dept->id }}"
+                                                <div class="modal fade" id="editDepartmentModal{{ $dept->id }}"
+                                                    tabindex="-1" aria-labelledby="editDepartmentModalLabel{{ $dept->id }}"
                                                     aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered modal-xl">
                                                         <div class="modal-content">
@@ -148,45 +173,96 @@
                                                                     aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                <form action="{{route('departments.update', $dept->id)}}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="mb-3">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label for="" class="form-label">Department Name:</label>
-                        </div>
-                        <div class="col-md-8">
-                            <input type="text" value="{{$dept->name}}" name="department_name" placeholder="Enter Department Nae Here..." class="form-control">
-                        </div>
-                    </div>
-                    @error('department_name')
-                        <p class="text-center text-danger">{{$message}}</p>
-                    @enderror
-                </div>
-                 <div class="mb-3">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label for="" class="form-label">Department Description:</label>
-                        </div>
-                        <div class="col-md-8">
-                           <textarea name="description" placeholder="Enter Description for Department" class="form-control"  id="description" cols="30" rows="5">{{$dept->description}}</textarea>
-                        </div>
-                    </div>
-                    @error('description')
-                        <p class="text-center text-danger">{{$message}}</p>
-                    @enderror
-                </div>
-                <div class="mb-3">
-                    <button type="submit" class="btn btn-primary btn-perm">Update Department</button>
-                </div>
-            </form>
+                                                                <form action="{{ route('departments.update', $dept->id) }}"
+                                                                    method="POST" enctype="multipart/form-data" >
+                                                                    @csrf
+                                                                    @method('PUT')
+                                                                    <div class="mb-3">
+                                                                        <div class="row">
+                                                                            <div class="col-md-4">
+                                                                                <label for=""
+                                                                                    class="form-label">Department Name:</label>
+                                                                            </div>
+                                                                            <div class="col-md-8">
+                                                                                <input type="text" value="{{ $dept->name }}"
+                                                                                    name="department_name"
+                                                                                    placeholder="Enter Department Nae Here..."
+                                                                                    class="form-control">
+                                                                            </div>
+                                                                        </div>
+                                                                        @error('department_name')
+                                                                            <p class="text-center text-danger">{{ $message }}</p>
+                                                                        @enderror
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="row">
+                                                                            <div class="col-md-4">
+                                                                                <label for=""
+                                                                                    class="form-label">Department
+                                                                                    Description:</label>
+                                                                            </div>
+                                                                            <div class="col-md-8">
+                                                                                <textarea name="description" placeholder="Enter Description for Department" class="form-control" id="description"
+                                                                                    cols="30" rows="5">{{ $dept->description }}</textarea>
+                                                                            </div>
+                                                                        </div>
+                                                                        @error('description')
+                                                                            <p class="text-center text-danger">{{ $message }}</p>
+                                                                        @enderror
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="row">
+                                                                            <div class="col-md-4">
+                                                                                <label for=""
+                                                                                    class="form-label">Department Price:</label>
+                                                                            </div>
+                                                                            <div class="col-md-8">
+                                                                                <input type="number" name="price"
+                                                                                    placeholder="Enter prie for Department"
+                                                                                    class="form-control"
+                                                                                    value="{{ old('price', $dept->pricing) }}"
+                                                                                    id="price" />
+                                                                            </div>
+                                                                        </div>
+                                                                        @error('price')
+                                                                            <p class="text-center text-danger">{{ $message }}</p>
+                                                                        @enderror
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="row">
+                                                                            <div class="col-md-4">
+                                                                                <label for=""
+                                                                                    class="form-label">Department Price:</label>
+                                                                            </div>
+                                                                            <div class="col-md-8">
+                                                                                <input type="file" name="department_image"
+                                                                                    class="form-control" id="department_image" />
+                                                                            </div>
+                                                                        </div>
+                                                                        @error('department_image')
+                                                                            <p class="text-center text-danger">{{ $message }}</p>
+                                                                        @enderror
+                                                                        @if (!$dept->department_image)
+                                                                       <img src="{{asset('storage/'. $dept->department_image)}}" class="img-thumbnail" id="image_container" width="100px" height="100px" style="object-fit: contian" alt="">
+                                                                          @else
+                                                                          <img src="{{asset('storage/'. $dept->department_image)}}" class="img-thumbnail" id="image_container" width="100px" height="100px" style="object-fit: contian" alt="">
+                                                                        @endif
+
+
+                                                                    </div>
+
+
+                                                                    <div class="mb-3">
+                                                                        <button type="submit"
+                                                                            class="btn btn-primary btn-perm">Update
+                                                                            Department</button>
+                                                                    </div>
+                                                                </form>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary"
                                                                     data-bs-dismiss="modal">Close</button>
-                                                                <button type="button" class="btn btn-primary">Save
-                                                                    changes</button>
+
                                                             </div>
                                                         </div>
                                                     </div>
@@ -231,7 +307,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script>
     $(document).ready(function() {
-         $('#table_data').DataTable({
+        $('#table_data').DataTable({
             responsive: true,
             dom: '<"d-flex justify-content-between align-items-center mb-3"lBf>rtip',
             buttons: ['copy', 'excel', 'print'],
@@ -240,9 +316,9 @@
                 targets: [2]
             }],
             lengthMenu: [
-        [5, 10, 25, 50, 100, -1],
-        [5, 10, 25, 50, 100, "All"]
-    ],
+                [5, 10, 25, 50, 100, -1],
+                [5, 10, 25, 50, 100, "All"]
+            ],
             language: {
                 search: "Search:",
                 zeroRecords: "No matching patients found",
@@ -255,5 +331,20 @@
         $('.dataTables_filter input[type="search"]').addClass('form-control mb-3').attr("placeholder",
             "Search...");
     });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+        //alert("hello");
+        const image  = document.getElementById("department_image");
+       image.addEventListener("change", function(){
+       if (image && image.files[0]) {
+        let imageUrl = URL.createObjectURL(image.files[0]);
+       // console.log(imageUrl);
+       document.getElementById("image_container").src =  imageUrl;
+       }
+       })
+
+
+    })
 </script>
 @stack('modals')

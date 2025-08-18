@@ -15,35 +15,123 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 // use \Razorpay\Api\Api; // ✅ Fully qualified Razorpay class
 use Illuminate\Support\Facades\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+// use App\Models\Admission;
+// use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 class AdmissionController extends Controller
 {
-    public function index()
+ public function index()
 {
-    // Get all current admissions with relationships
-    $admissions = Admission::with(['patient.user', 'discharge', 'ward', 'bed','payments'])->get();
-    $payment =  Payment::all();
-//    dd($payment);
+    $user = auth()->user();
 
-    // Get IDs of currently admitted patients (no discharge record)
-    $admittedPatientIds = Admission::doesntHave('discharge')->pluck('patient_id');
+    if ($user->hasRole('Patient')) {
+        // Patient role: শুধু নিজের admission দেখাবে
+        $admissions = Admission::with(['patient.user', 'discharge', 'ward', 'bed', 'payments'])
+            ->where('patient_id', $user->patient->id)
+            ->get();
 
-    // Get available patients (not currently admitted)
-    $availablePatients = Patient::whereNotIn('id', $admittedPatientIds)->with('user')->get();
+        // এই Patient এর available admission patient list দরকার না, তাই empty রাখো বা null
+        $availablePatients = collect();
+
+    } else {
+        // অন্য রোল: সব admission দেখাবে
+        $admissions = Admission::with(['patient.user', 'discharge', 'ward', 'bed', 'payments'])->get();
+
+        $admittedPatientIds = Admission::doesntHave('discharge')->pluck('patient_id');
+
+        $availablePatients = Patient::whereNotIn('id', $admittedPatientIds)->with('user')->get();
+    }
+
+    $payment = Payment::all();
     $amount = 1500;
-
-    // Get wards and beds
     $wards = Ward::all();
-      $beds = Bed::where('status', 'available')->get();
+    $beds = Bed::where('status', 'available')->get();
     $patients = Patient::all();
 
     return view('pages.AdminPages.Admission&Discharge.index', compact(
-        'admissions', 'availablePatients', 'beds', 'wards' ,
-        'patients',
-        'payment',
-        'amount'
+        'admissions', 'availablePatients', 'beds', 'wards',
+        'patients', 'payment', 'amount'
     ));
 }
 
+
+
+
+public function ajaxList(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Admission::with(['patient', 'ward', 'bed'])
+            ->select('admissions.*');
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+
+            // Patient Name
+            ->addColumn('patient_name', function ($row) {
+                return $row->patient ? $row->patient->name : '-';
+            })
+
+            // Ward
+            ->addColumn('ward', function ($row) {
+                return $row->ward ? $row->ward->name : '-';
+            })
+
+            // Bed
+            ->addColumn('bed', function ($row) {
+                return $row->bed ? $row->bed->bed_number : '-';
+            })
+
+            // Date
+            ->editColumn('created_at', function ($row) {
+                return $row->created_at ? $row->created_at->format('d-m-Y') : '';
+            })
+
+            // Status
+            ->addColumn('status', function ($row) {
+                $badgeClass = match ($row->status) {
+                    'Admitted' => 'bg-success',
+                    'Discharged' => 'bg-secondary',
+                    'Pending' => 'bg-warning',
+                    default => 'bg-light'
+                };
+                return '<span class="badge ' . $badgeClass . '">' . $row->status . '</span>';
+            })
+
+            // Edit Button
+            ->addColumn('edit', function ($row) {
+                return '<button class="btn btn-sm btn-primary editAdmission" data-id="' . $row->id . '">
+                            <i class="fa fa-edit"></i>
+                        </button>';
+            })
+
+            // Discharge Button
+            ->addColumn('discharge', function ($row) {
+                if ($row->status !== 'Discharged') {
+                    return '<button class="btn btn-sm btn-danger dischargeAdmission" data-id="' . $row->id . '">
+                                <i class="fa fa-sign-out-alt"></i>
+                            </button>';
+                }
+                return '-';
+            })
+
+            // Payment Button
+            ->addColumn('payment', function ($row) {
+                return '<button class="btn btn-sm btn-warning paymentAdmission" data-id="' . $row->id . '">
+                            <i class="fa fa-credit-card"></i>
+                        </button>';
+            })
+
+            // Print Button
+            ->addColumn('print', function ($row) {
+                return '<a href="' . route('admissions.print', $row->id) . '" target="_blank" class="btn btn-sm btn-info">
+                            <i class="fa fa-print"></i>
+                        </a>';
+            })
+
+            ->rawColumns(['status', 'edit', 'discharge', 'payment', 'print'])
+            ->make(true);
+    }
+}
 
 
 public function store(Request $request)

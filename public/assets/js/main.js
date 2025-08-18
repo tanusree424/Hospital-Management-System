@@ -1,6 +1,6 @@
 (function ($) {
     "use strict";
-    
+
     // Dropdown on mouse hover
     $(document).ready(function () {
         function toggleNavbarMethod() {
@@ -26,8 +26,8 @@
     $('.time').datetimepicker({
         format: 'LT'
     });
-    
-    
+
+
     // Back to top button
     $(window).scroll(function () {
         if ($(this).scrollTop() > 100) {
@@ -99,6 +99,32 @@
         dots: true,
         loop: true,
     });
-    
-})(jQuery);
 
+})(jQuery);
+ $('#department_id').on('change', function() {
+            var departmentId = $(this).val();
+            var url = $(this).data('url');
+
+            if (departmentId) {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    data: {
+                        department_id: departmentId
+                    },
+                    success: function(doctors) {
+                        $('#doctor_id').empty().append(
+                            '<option value="">-- Select Doctor --</option>');
+                        $.each(doctors, function(index, doctor) {
+                            $('#doctor_id').append('<option value="' + doctor.id +
+                                '">' + doctor.user.name + '</option>');
+                        });
+                    },
+                    error: function() {
+                        console.error('Could not fetch doctors.');
+                    }
+                });
+            } else {
+                $('#doctor_id').empty().append('<option value="">-- Select Doctor --</option>');
+            }
+        });
