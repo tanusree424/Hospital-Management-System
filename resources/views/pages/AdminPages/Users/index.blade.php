@@ -87,7 +87,6 @@
                                                     aria-autocomplete="off" placeholder="Confrim Your Password.... "
                                                     class="form-control">
                                             </div>
-
                                         </div>
                                     </div>
                                     <div class="mb-3">
@@ -138,7 +137,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-bordered mt-3" id="user-table">
+                    <table class="table table-bordered table-stripped table-hover mt-3" id="user-table">
                         <thead class="table-dark">
                             <tr>
                                 <th>#</th>
@@ -165,7 +164,6 @@
                                             data-bs-target="#viewModal{{ $user->id }}">
                                             <i class="bi bi-eye"></i>
                                         </button>
-
                                         <!-- Edit Button -->
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#editModal{{ $user->id }}">

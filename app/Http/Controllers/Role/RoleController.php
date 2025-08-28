@@ -17,8 +17,8 @@ class RoleController extends Controller
      */
     public function index()
 {
-    Gate::authorize('access-role'); // blocks at backend too
-    $roles = Role::latest()->paginate(5);
+    Gate::authorize('Show role'); // blocks at backend too
+    $roles = Role::latest('id')->get();
     $permissions = Permission::all();
 
         // $rolePermissions = $roles->permissions->pluck('name')->toArray();
@@ -68,19 +68,6 @@ class RoleController extends Controller
 
         return redirect()->route('role.index')->with('success', 'Role added successfully!');
     }
-
-    /**
-     * Show form to edit role.
-     */
-    public function edit($id)
-    {
-        Gate::authorize('edit-role');
-
-
-
-        return view('pages.AdminPages.Roles.edit', compact('role', 'permissions', 'rolePermissions'));
-    }
-
     /**
      * Update role.
      */

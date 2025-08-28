@@ -292,23 +292,18 @@
 
 
     {{-- jQuery --}}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    {{-- DataTables Core --}}
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-
     {{-- DataTables Buttons --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-
     {{-- Export Dependencies --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
     <script>
         $(document).ready(function() {
             $('#table_data').DataTable({
@@ -331,7 +326,6 @@
                     infoEmpty: "No users available",
                     infoFiltered: "(filtered from _MAX_ total services)",
                     lengthMenu: "Show _MENU_ services"
-
 
                 }
             });

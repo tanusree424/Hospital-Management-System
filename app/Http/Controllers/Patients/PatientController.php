@@ -24,10 +24,10 @@ class PatientController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return view('pages.AdminPages.Patients.create');
-    }
+    // public function create()
+    // {
+    //     return view('pages.AdminPages.Patients.create');
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -147,7 +147,7 @@ class PatientController extends Controller
         ]);
         return redirect()->route('patients.index')->with('success','patient Data Updated Successfully');
 
-    }
+}
 
     /**
      * Remove the specified resource from storage.

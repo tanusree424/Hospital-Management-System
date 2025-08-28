@@ -19,14 +19,17 @@
                 </tr>
             </thead>
             <tbody>
+
     @if ($medical_records->count() > 0)
         @php $index = 1; @endphp
-        @foreach ($medical_records as $mr_record)
+        @foreach ($medical_records as $index => $mr_record)
+
             <tr class="text-center">
-                <td>{{ $index++ }}</td>
-                <td>{{ $mr_record->patient->user->name }}</td>
-                <td>{{ $mr_record->doctor->user->name }}</td>
-                <td>{{ $mr_record->doctor->department->name }}</td>
+                <td>{{$index+1}}</td>
+              <td>{{ $mr_record->patient?->user?->name ?? 'GUEST' }}</td>
+<td>{{ $mr_record->doctor?->user?->name ?? 'N/A' }}</td>
+<td>{{ $mr_record->doctor?->department?->name ?? 'N/A' }}</td>
+
                 <td>
                     @if (!is_null($mr_record->appointment) && $mr_record->appointment->id)
                         <form action="{{ route('medical_record.download') }}" method="POST" target="_blank">

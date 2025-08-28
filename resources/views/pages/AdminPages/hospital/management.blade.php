@@ -91,8 +91,6 @@
                                             </button>
                                             @endcan
                                             @can('delete_bed_access')
-
-
                                             <form action="{{ route('hospital.management.bed.destroy', $bed->id) }}"
                                                 method="POST" class="d-inline"
                                                 onsubmit="return confirm('Are you sure you want to delete this bed?')">
@@ -102,8 +100,6 @@
                                             </form>
                                              @endcan
                                             @push('modals')
-
-
                                             <div class="modal fade" id="editBedModal{{ $bed->id }}" tabindex="-1"
                                                 aria-labelledby="editBedModalLabel{{ $bed->id }}" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -202,8 +198,6 @@
                                              @endpush
 
                                             @push('modals')
-
-
                                             <div class="modal fade" id="viewBedModal{{ $bed->id }}" tabindex="-1"
                                                 aria-labelledby="viewBedModalLabel{{ $bed->id }}"
                                                 aria-hidden="true">
@@ -240,7 +234,6 @@
                                                                 </li>
                                                             </ul>
                                                         </div>
-
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary"
                                                                 data-bs-dismiss="modal">
@@ -267,8 +260,6 @@
                 {{-- Add Bed Modal --}}
                 {{-- @include('pages.AdminPages.hospital.modals.Beds.add-beds') --}}
                 @push('modals')
-
-
                 <div class="modal fade" id="addBedModal" tabindex="-1" aria-labelledby="addBedModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -379,17 +370,14 @@ $(document).ready(function () {
     ],
     language: {
         search: "Search:",
-        zeroRecords: "No matching roles found",
-        info: "Showing _START_ to _END_ of _TOTAL_ roles",
-        infoEmpty: "No roles available",
-        infoFiltered: "(filtered from _MAX_ total roles)",
+        zeroRecords: "No matching bed found",
+        info: "Showing _START_ to _END_ of _TOTAL_ beds",
+        infoEmpty: "No beds available",
+        infoFiltered: "(filtered from _MAX_ total beds)",
         lengthMenu: "Show _MENU_ entries"
     }
 });
-
 });
-
-
 </script>
 @stack('modals')
 

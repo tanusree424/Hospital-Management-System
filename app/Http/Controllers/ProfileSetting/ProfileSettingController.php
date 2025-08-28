@@ -70,13 +70,10 @@ public function update(Request $request)
     if ($request->hasFile('profile_image')) {
         $profileImagePath = $request->file('profile_image')->store('profile_images', 'public');
     }
-
     $patientImagePath = null;
     if ($request->hasFile('profile_image')) {
         $patientImagePath = $request->file('profile_image')->store('patient_image', 'public');
     }
-
-    // Role-based updates
     if ($user->hasRole('Admin')) {
         $user->admin()->updateOrCreate(
             ['user_id' => $user->id],
@@ -85,8 +82,7 @@ public function update(Request $request)
                 // Keep old image if no new one uploaded
                 'profile_picture' => $profileImagePath ?? $user->admin?->profile_picture,
             ]
-        );
-    }
+        );}
     elseif ($user->hasRole('Doctor')) {
         $user->doctor()->updateOrCreate(
             ['user_id' => $user->id],
@@ -108,21 +104,12 @@ public function update(Request $request)
                 'address' => $request->address,
                 'patient_image' => $patientImagePath ?? $user->patient?->patient_image,
             ]
-        );
-    }
-
-    // Response
+        );}
     if ($request->ajax()) {
         return response()->json(['success' => 'Profile updated successfully.']);
     }
-
     return back()->with('success', 'Profile updated successfully.');
 }
-
-
-
-
-
 public function changePassword(Request $request)
 {
     $request->validate([

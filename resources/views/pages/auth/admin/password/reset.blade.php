@@ -75,7 +75,7 @@
 
                 <form method="POST" action="{{ route('password.update') }}">
                     @csrf
-                    <input type="text" name="token" value="{{ $token }}">
+                    <input type="hidden" name="token" value="{{ $token }}">
                     <div class="mb-3">
                     <input type="email" name="email" class="form-control"
                             placeholder="Enter your registerd email" required>

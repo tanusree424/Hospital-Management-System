@@ -6,11 +6,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Department;
+use Illuminate\Support\Facades\Gate;
+
+
 
 class DepartmentController extends Controller
 {
     public function index()
     {
+
+        if (Gate::none(['View Department'])) {
+           abort(403);
+        }
         $departments = Department::latest('id')->get();
         return view('pages.AdminPages.Departments.index', compact('departments'));
     }
@@ -19,6 +26,7 @@ class DepartmentController extends Controller
         return view('pages.AdminPages.Departments.create');
 
     }
+
     public function store(Request $request)
 {
     $validate = Validator::make($request->all(), [
@@ -51,11 +59,7 @@ class DepartmentController extends Controller
     return redirect()->route('departments.index')->with('success', 'Department created successfully');
 }
 
-    public function edit(string $id , Request $request)
-    {
-        $department = Department::find($id);
-        return view('pages.AdminPages.Departments.Edit', compact('department'));
-    }
+
     public function update(string $id, Request $request)
     {
       $department = Department::find($id);
@@ -71,10 +75,6 @@ class DepartmentController extends Controller
       if ($validator->fails()) {
         return redirect()->route('departments.edit', $id)->withErrors($validator);
       }
-    //   $department->update([
-    //     "name"=>$request->department_name,
-    //     "description"=>$request->description
-    //   ]);
     if ($request->department_name) {
        $department->name =  $request->department_name;
     }

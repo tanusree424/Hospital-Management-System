@@ -34,7 +34,6 @@
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                                             aria-label="Close"></button>
                                     </div>
-
                                     <form action="{{ route('permission.store') }}" method="POST">
                                         @csrf
                                         <div class="modal-body">
@@ -46,7 +45,6 @@
                                                     <small class="text-danger">{{ $message }}</small>
                                                 @enderror
                                             </div>
-
                                             <div class="mb-3">
                                                 <label for="perm-slug" class="form-label"><strong>Permission Slug</strong></label>
                                                 <input type="text" id="perm-slug" name="permission_slug" class="form-control"
@@ -56,7 +54,6 @@
                                                 @enderror
                                             </div>
                                         </div>
-
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                             <button type="submit" class="btn btn-success">Add Permission</button>
@@ -73,9 +70,6 @@
 
         </div>
         <div class="card-body">
-
-
-
                 <table class="table table-bordered  table-stripped table-hover"
                     id="table_data">
                     <thead class="text-center table-dark">

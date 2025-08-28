@@ -10,7 +10,7 @@
                       Dolor ea et dolore et at sea ea at dolor, justo ipsum duo rebum sea invidunt voluptua. Eos vero
                       eos vero ea et dolore eirmod et. Dolores diam duo invidunt lorem. Elitr ut dolores magna sit. Sea
                       dolore sanctus sed et. Takimata takimata sanctus sed.</p>
-                  <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="">Find Doctor</a>
+                   <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="{{route('find.doctor.search')}}">Find Doctor</a>
                   <a class="btn btn-outline-dark rounded-pill py-3 px-5" href="">Read More</a>
               </div>
               <div class="col-lg-6">

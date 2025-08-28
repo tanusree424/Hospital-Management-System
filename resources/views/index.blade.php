@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <title>MEDINOVA - Hospital Website Template</title>
@@ -16,6 +15,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;700&display=swap"
         rel="stylesheet">
+        <!-- Toastr CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css" rel="stylesheet">
@@ -104,7 +105,7 @@
                                 <a href="{{route('search.page')}}" class="dropdown-item">Search</a>
                             </div>
                         </div>
-                        <a href="contact.html" class="nav-item nav-link">Contact</a>
+                        <a href="{{route('contact.page')}}" class="nav-item nav-link">Contact</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Login</a>
                             <div class="dropdown-menu m-0">
@@ -225,82 +226,11 @@
                     </div>
                 @endforeach
 
-                {{-- <div class="col-lg-4 col-md-6">
-                    <div
-                        class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
-                        <div class="service-icon mb-4">
-                            <i class="fa fa-2x fa-procedures text-white"></i>
-                        </div>
-                        <h4 class="mb-3">Operation & Surgery</h4>
-                        <p class="m-0">Kasd dolor no lorem nonumy sit labore tempor at justo rebum rebum stet, justo
-                            elitr dolor amet sit</p>
-                        <a class="btn btn-lg btn-primary rounded-pill" href="">
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div
-                        class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
-                        <div class="service-icon mb-4">
-                            <i class="fa fa-2x fa-stethoscope text-white"></i>
-                        </div>
-                        <h4 class="mb-3">Outdoor Checkup</h4>
-                        <p class="m-0">Kasd dolor no lorem nonumy sit labore tempor at justo rebum rebum stet, justo
-                            elitr dolor amet sit</p>
-                        <a class="btn btn-lg btn-primary rounded-pill" href="">
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div
-                        class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
-                        <div class="service-icon mb-4">
-                            <i class="fa fa-2x fa-ambulance text-white"></i>
-                        </div>
-                        <h4 class="mb-3">Ambulance Service</h4>
-                        <p class="m-0">Kasd dolor no lorem nonumy sit labore tempor at justo rebum rebum stet, justo
-                            elitr dolor amet sit</p>
-                        <a class="btn btn-lg btn-primary rounded-pill" href="">
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div
-                        class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
-                        <div class="service-icon mb-4">
-                            <i class="fa fa-2x fa-pills text-white"></i>
-                        </div>
-                        <h4 class="mb-3">Medicine & Pharmacy</h4>
-                        <p class="m-0">Kasd dolor no lorem nonumy sit labore tempor at justo rebum rebum stet, justo
-                            elitr dolor amet sit</p>
-                        <a class="btn btn-lg btn-primary rounded-pill" href="">
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div
-                        class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
-                        <div class="service-icon mb-4">
-                            <i class="fa fa-2x fa-microscope text-white"></i>
-                        </div>
-                        <h4 class="mb-3">Blood Testing</h4>
-                        <p class="m-0">Kasd dolor no lorem nonumy sit labore tempor at justo rebum rebum stet, justo
-                            elitr dolor amet sit</p>
-                        <a class="btn btn-lg btn-primary rounded-pill" href="">
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-                    </div>
-                </div> --}}
+
             </div>
         </div>
     </div>
     <!-- Services End -->
-
-
     <!-- Appointment Start -->
     <div class="container-fluid bg-primary my-5 py-5">
         <div class="container py-5">
@@ -314,7 +244,7 @@
                         Dolor ea et dolore et at sea ea at dolor, justo ipsum duo rebum sea invidunt voluptua. Eos vero
                         eos vero ea et dolore eirmod et. Dolores diam duo invidunt lorem. Elitr ut dolores magna sit.
                         Sea dolore sanctus sed et. Takimata takimata sanctus sed.</p>
-                    <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="">Find Doctor</a>
+                    <a class="btn btn-dark rounded-pill py-3 px-5 me-3" href="{{route('find.doctor.search')}}">Find Doctor</a>
                     <a class="btn btn-outline-dark rounded-pill py-3 px-5" href="">Read More</a>
                 </div>
                 <div class="col-lg-6">
@@ -404,8 +334,6 @@
         </div>
     </div>
     <!-- Appointment End -->
-
-
     <!-- Pricing Plan Start -->
     <div class="container-fluid py-5">
         <div class="container">
@@ -444,8 +372,6 @@
         </div>
     </div>
     <!-- Pricing Plan End -->
-
-
     <!-- Team Start -->
     <div class="container-fluid py-5">
         <div class="container">
@@ -486,8 +412,6 @@
         </div>
     </div>
     <!-- Team End -->
-
-
     <!-- Search Start -->
     {{-- <div class="container-fluid bg-primary my-5 py-5">
         <div class="container py-5">
@@ -540,8 +464,6 @@
     <!-- Search End -->
 
     <!-- Search End -->
-
-
     <!-- Testimonial Start -->
     <div class="container-fluid py-5">
         <div class="container">
@@ -581,8 +503,6 @@
             </div>
         </div>
         <!-- Testimonial End -->
-
-
         <!-- Blog Start -->
         <div class="container-fluid py-5">
             <div class="container">
@@ -673,8 +593,6 @@
             </div>
         </div>
         <!-- Blog End -->
-
-
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light mt-5 py-5">
             <div class="container py-5">
@@ -756,7 +674,7 @@
             <div class="container">
                 <div class="row g-5">
                     <div class="col-md-6 text-center text-md-start">
-                        <p class="mb-md-0">&copy; <a class="text-primary" href="#">Your Site Name</a>. All
+                        <p class="mb-md-0">&copy; <a class="text-primary" href="#">www.medinova.com</a>. All
                             Rights
                             Reserved.</p>
                     </div>
@@ -785,8 +703,15 @@
         <script src="{{ asset('assets/lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
         <script src="{{ asset('assets/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
 
+
         <!-- Template Javascript -->
         <script src="{{ asset('assets/js/main.js') }}"></script>
+        <!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         </script>
         @if (session('success'))
             <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.js"
@@ -807,11 +732,6 @@
                 });
             </script>
         @endif
-
-
-
-
-
 </body>
 
 </html>

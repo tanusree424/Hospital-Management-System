@@ -7,21 +7,15 @@ use Illuminate\Http\Request;
 use App\Models\Blog;
 use Illuminate\support\Facades\Log;
 use Illuminate\support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 class BlogController extends Controller
 {
     public function index()
     {
-        //$userPatient = auth()->user()->hasRole('Patient');
-        // $userDoctor = auth()->user()->hasRole('Doctor');
 
-        // $userId = auth()->id();
-
-        // if ($userDoctor) {
-        //     $blogs = Blog::with('patient.user')->where('author', $userId)->get();
-        //    // return response()->json(["blogs"=>$blogs]);
-        //     return view('pages.AdminPages.Blogs.index', compact('blogs'));
-
-        // }
+        if (Gate::none(['blog_access'])) {
+            abort(403);
+        }
         $blogs = Blog::with('author')->get();
         // foreach ($blogs as $key => $blog) {
         //     return response()->json(["blog"=> $blog]);
@@ -64,7 +58,6 @@ class BlogController extends Controller
     if (!$blog) {
         return redirect()->back()->with('error', "Blog not created successfully");
     }
-
     return redirect()->route('admin.blogs.index')->with('success', "Blog '{$blog->title}' created successfully");
 }
  public function update(Request $request, $id)
@@ -75,39 +68,29 @@ class BlogController extends Controller
         "description" => "nullable|string",
         "image"       => "nullable|image|mimes:jpg,jpeg,png|max:2048",
     ]);
-
     $blog = Blog::find($id);
-
     if (!$blog) {
         return redirect()->back()->with('error', "Blog Not Found");
     }
-
     $data = [];
 
     if ($request->has('title')) {
         $data['title'] = $request->title;
     }
-
     if ($request->has('slug')) {
         $data['slug'] = $request->slug;
     }
-
     if ($request->has('description')) {
         $data['description'] = $request->description;
     }
-
     if ($request->hasFile('image')) {
         // delete old image if exists
         if ($blog->image && Storage::disk('public')->exists($blog->image)) {
             Storage::disk('public')->delete($blog->image);
         }
-
-        // store new image
         $data['image'] = $request->file('image')->store('blog_image', 'public');
     }
-
     $blog->update($data);
-
     return redirect()->route('admin.blogs.index')
         ->with('success', "Blog {$blog->title} Updated Successfully");
 }

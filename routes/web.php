@@ -21,6 +21,7 @@ use App\Http\Controllers\AdminDashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Services\ServiceController;
 use App\Http\Controllers\Blog\BlogController;
+use App\Http\Controllers\Contact\ContactController;
 
 
 
@@ -55,6 +56,7 @@ Route::get('/blog/{slug}', [DashboardController::class,'findSingleBlog'])->name(
 Route::post('/comment/{blogId}',[DashboardController::class, 'storeComment'])->name('comments.store');
 Route::get('/find-doctor/search', [DashboardController::class, 'search'])
 ->name('find.doctor.search');
+Route::post('/pay-later', [DashboardController::class , 'payLater'])->name('guest.payLater');
 Route::get('/all/blogs', [DashboardController::class,'allBlogs'])->name('allBlogs');
 Route::get('/search', [DashboardController::class ,'searchBlog'])->name('search.page');
 Route::get('/about',[DashboardController::class,'about'])->name('about');
@@ -65,14 +67,17 @@ Route::get('/pricing',[DashboardController::class,'pricing'])->name('pricing');
 Route::get('/testimonial',[DashboardController::class,'testimonial'])->name('testimonial');
 Route::get('/get-doctors',[DashboardController::class,'getDoctorsByDepartment'])->name('doctors');
 Route::post('/store/appointment/guest' , [DashboardController::class,'storeGuest'])->name('guest.store');
-Route::get('/guest/payment', [Dashboardcontroller::class,'paymentPage'])->name('guest.payment');
+Route::get('/guest/{id}/payment', [Dashboardcontroller::class,'paymentPage'])->name('guest.payment');
 Route::post('/payment/razorpay/success', [DashboardController::class, 'razorpaySuccess'])->name('payment.razorpay.success');
 Route::get('/appointment/department/{id}/book', [DashboardController::class,'bookAppointmentByDepartment'])->name('appointment.dept.book');
+Route::get('/contact', [DashboardController::class,'contact'])->name('contact.page');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store')
+     ->middleware('throttle:10,1'); // basic rate-limit (10 req/min)
 //Route::get('/services', [DashboardController::class, 'index'])->name('services.index');
 //Role Routes
 Route::middleware('auth')->prefix('admin')->group(function () {
 
-   Route::get('roles',[RoleController::class,'index'])->name('role.index');
+Route::get('roles',[RoleController::class,'index'])->name('role.index');
 Route::get('roles/create',[RoleController::class,'create'])->name('role.create');
 Route::post('roles',[RoleController::class,'store'])->name('role.store');
 Route::get('role/{id}',[RoleController::class ,'edit'])->name('role.edit');
@@ -95,6 +100,7 @@ Route::post('users',[UserController::class ,'store'])->name('user.store');
 Route::get('user/{id}', [UserController::class , 'edit'])->name('user.edit');
 Route::put('user/{id}', [UserController::class,'update'])->name('user.update');
 Route::delete('user/{id}',[UserController::class,'destroy'])->name('user.delete');
+
 
 // Departments Routes
 Route::get('departments', [DepartmentController::class,'index'])->name('departments.index');
@@ -209,5 +215,8 @@ Route::get('blogs', [BlogController::class ,'index'] )
 Route::post('blogs' , [BlogController::class ,'store'])->name('admin.blogs.store');
 Route::put('blogs/{id}', [BlogController::class,'update'])->name('admin.blogs.update');
 Route::delete('blogs/{id}', [BlogController::class,'destroy'])->name('admin.blogs.delete');
+
+// Contacts Routes
+Route::get('/contact','App\Http\Controllers\Contact\ContactController@index')->name('contact.index');
 });
 

@@ -93,7 +93,8 @@
                                         $role = $user->roles->pluck('name')->first();
                                     @endphp
 
-                                    @if ($role === 'Admin' || ($blog->author_type === 'doctor' && $blog->author_id == optional($user->doctor)->id))
+                                    @if ($role === 'Admin' || ($blog->author_type === 'doctor' && $blog->author_id ==
+                                    optional($user->doctor)->id))
                                         <!-- Edit Modal Trigger -->
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#editBlogModal{{ $blog->id }}">

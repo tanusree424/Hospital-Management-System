@@ -21,7 +21,6 @@
                                 <div class="modal-body">
                                     <form action="{{ route('doctors.store') }}" method="POST" enctype="multipart/form-data">
                                         @csrf
-
                                         {{-- Name --}}
                                         <div class="mb-3">
                                             <div class="row">
@@ -36,10 +35,7 @@
                                                     @enderror
                                                 </div>
                                             </div>
-
-
                                         </div>
-
                                         {{-- Email --}}
                                         <div class="mb-3">
                                             <div class="row">
@@ -206,8 +202,8 @@
 
         <div class="col-md-10 m-auto">
             <table class="table table-bordered shadow  table-striped shadow-sm align-middle text-center" id="table_data">
-                <thead class="table-dark">
-                    <tr>
+                <thead class="table-dark text-center">
+                    <tr class="text-center">
                         <th>#</th>
                         <th>Name</th>
                         <th>Department</th>
@@ -231,7 +227,6 @@
                                                 <i class="bi bi-eye"  title="View Doctor"></i>
                                             </button>
                                         </div>
-
                                         {{-- View Modal --}}
                                         @push('modals')
                                             <div class="modal fade" id="viewModal{{ $doctor->id }}" tabindex="-1"
@@ -497,6 +492,8 @@
             responsive: true,
             dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
             buttons: ['copy', 'excel', 'print'],
+            // dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            // buttons: ['copy', 'excel', 'print'],
             columnDefs: [{
                 orderable: false,
                 targets: [3] // Action column
@@ -507,11 +504,11 @@
             ],
             language: {
                 search: "Search:",
-                zeroRecords: "No matching roles found",
-                info: "Showing _START_ to _END_ of _TOTAL_ roles",
-                infoEmpty: "No roles available",
-                infoFiltered: "(filtered from _MAX_ total roles)",
-                lengthMenu: "Show _MENU_ entries"
+                zeroRecords: "No matching doctors found",
+                info: "Showing _START_ to _END_ of _TOTAL_ doctors",
+                infoEmpty: "No doctors available",
+                infoFiltered: "(filtered from _MAX_ total doctors)",
+                lengthMenu: "Show _MENU_ doctors"
             }
         });
 

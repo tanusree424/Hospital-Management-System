@@ -105,7 +105,6 @@
                             <label class="form-label">Phone</label>
                             <input type="text" name="phone" class="form-control">
                         </div>
-
                         <div class="col-md-6">
                             <label class="form-label">Pincode</label>
                             <input type="text" name="pincode" id="pincode" class="form-control">
@@ -135,12 +134,10 @@
                             <input type="file" name="patient_image" class="form-control">
                         </div>
                     </div>
-
                     <div class="form-check mt-3">
                         <input class="form-check-input" type="checkbox" name="remember">
                         <label class="form-check-label">Remember Me</label>
                     </div>
-
                     <div class="d-grid mt-3">
                         <button type="submit" class="btn btn-primary btn-custom">Register</button>
                     </div>

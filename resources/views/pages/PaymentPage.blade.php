@@ -22,8 +22,9 @@
                     </form>
 
                     {{-- Pay Later --}}
-                    <form action="" method="POST" class="d-inline ms-3">
+                    <form action="{{route('guest.payLater')}}" method="POST" class="d-inline ms-3">
                         @csrf
+                        <input type="hidden" value="{{$appointment->id}}" name="appointment_id"/>
                         <button type="submit" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill">
                             ⏳ Pay Later
                         </button>

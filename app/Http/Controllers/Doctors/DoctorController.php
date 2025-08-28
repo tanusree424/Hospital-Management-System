@@ -24,22 +24,13 @@ class DoctorController extends Controller
         return view('pages.AdminPages.Doctors.index', compact('doctors','departments'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
 
-     return view('pages.AdminPages.Doctors.create',compact('departments'));
-    }
 
     /**
      * Store a newly created resource in storage.
      */
 public function store(Request $request)
-{
-
-    $validator = Validator::make($request->all(), [
+{$validator = Validator::make($request->all(), [
         "name" => "required|string|max:50|min:3",
         "email" => "required|email|unique:users,email",
         "password" => "required|confirmed|min:6",
@@ -62,13 +53,11 @@ public function store(Request $request)
 
     // ✅ Assign role
     $user->assignRole('doctor');
-
     // ✅ Handle file upload
     $imagePath = null;
     if ($request->hasFile('profile_picture')) {
         $imagePath = $request->file('profile_picture')->store('doctor_profiles', 'public');
     }
-
     // ✅ Create doctor record
    $doctor= Doctor::create([
         "user_id" => $user->id,
@@ -77,31 +66,10 @@ public function store(Request $request)
         "department_id" => $request->department,
         "profile_picture" => $imagePath,
     ]);
-
    return redirect()
     ->route('doctors.index')
     ->with('success', "Doctor {$doctor->user->name} Profile Created Successfully");
-
 }
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $doctor = Doctor::find($id);
-        $departments = Department::all();
-        return view('pages.AdminPages.Doctors.edit', compact('doctor', 'departments'));
-    }
 
     /**
      * Update the specified resource in storage.

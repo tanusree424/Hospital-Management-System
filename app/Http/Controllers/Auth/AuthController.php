@@ -15,8 +15,6 @@ class AuthController extends Controller
     {
         return view('pages.auth.Register');
     }
-
-
 public function PostRegister(Request $request)
 {
     $validate = Validator::make($request->all(), [
@@ -24,21 +22,16 @@ public function PostRegister(Request $request)
         "email" => "required|string|email|max:50|unique:users,email",
         "password" => "required|string|min:6|max:50"
     ]);
-
     if ($validate->fails()) {
         return redirect()->route('admin.register')
                          ->withErrors($validate)
                          ->withInput(); // form input retain
     }
-
-    // ✅ User Create
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
     ]);
-
-    // ✅ ডিফল্ট রোল Patient অ্যাসাইন করা
     $user->assignRole('patient'); // Spatie Permission method
     $patient = Patient::create([
         'user_id'=> $user->id,
@@ -52,24 +45,18 @@ public function PostRegister(Request $request)
         'phone'=>$request->phone,
         'patient_image'=> $request->patient_image,
         'address'=>$request->address,
-
-
     ]);
-
-    // ✅ Optional: Auto login after register
-    // Auth::login($user);
-
     return redirect()->route('admin.login')->with('success', 'Registration successful!');
 }
 
 
-    public function login()
-    {
+public function login()
+{
         return view('pages.auth.Login');
-    }
-    public function loginPost(Request $request)
-    {
-        $validator =  Validator::make($request->all(),[
+}
+public function loginPost(Request $request)
+{
+    $validator =  Validator::make($request->all(),[
             "email"=>"required|email|string|max:50|min:3",
             "password"=>"required"
         ]);
@@ -81,7 +68,8 @@ public function PostRegister(Request $request)
       return redirect()->back()->withErrors(['email'=>'Invalid Credentials'])->withInput();
     }
 
-   public function logout()
+
+public function logout()
 {
     if (Auth::check()) {
         Auth::logout(); // Logs the user out

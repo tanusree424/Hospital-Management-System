@@ -12,7 +12,8 @@
 
         {{-- Dashboard --}}
         <li class="nav-item">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" style="font-size: 13px;">
+            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                style="font-size: 13px;">
                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
             </a>
         </li>
@@ -137,6 +138,15 @@
             </a>
         </li>
         @endcan
+        @can('access_queries')
+<li class="nav-item">
+    <a href="{{ route('contact.index') }}" class="nav-link {{ request()->routeIs('contact.index') ? 'active' : '' }}" style="font-size: 13px;">
+        <i class="bi bi-envelope"></i>
+        Queries
+    </a>
+</li>
+@endcan
+
 
 
         {{-- Logout --}}

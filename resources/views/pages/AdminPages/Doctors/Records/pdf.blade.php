@@ -18,7 +18,7 @@
     </div>
 
     <div class="section">
-        <p><span class="label">Patient:</span> {{ $patient->name }}</p>
+        <p><span class="label">Patient:</span> {{ $patient->name ?? "GUEST" }}</p>
         <p><span class="label">Doctor:</span> {{ $doctor->name }}</p>
     </div>
 

@@ -489,6 +489,19 @@
     processing: true,
     serverSide: true,
     ajax: '{{ route("appointments.data") }}',
+     responsive: true,
+            dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            buttons: ['copy', 'excel', 'print'],
+            // dom: '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            // buttons: ['copy', 'excel', 'print'],
+            columnDefs: [{
+                orderable: false,
+                targets: [3] // Action column
+            }],
+            lengthMenu: [
+                [5, 10, 25, 50, 100, -1],
+                [5, 10, 25, 50, 100, "All"]
+            ],
 
     columns: [
         { data: 'id', name: 'id' },
@@ -503,7 +516,7 @@
 });
 
 
-        // ✅ Department change -> fetch corresponding doctors
+        //  Department change -> fetch corresponding doctors
         $('#department_id').on('change', function() {
             var departmentId = $(this).val();
             var url = $(this).data('url');

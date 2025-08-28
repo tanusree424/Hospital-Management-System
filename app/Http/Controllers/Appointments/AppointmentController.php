@@ -341,8 +341,7 @@ public function getDoctorsByDepartment(Request $request)
      */
 
 public function store(Request $request)
-{
-    $validated = $request->validate([
+{$validated = $request->validate([
         'department_id'     => 'required|exists:departments,id',
         'doctor_id'         => 'required|exists:doctors,id',
         'appointment_date'  => 'required|date',
@@ -350,12 +349,10 @@ public function store(Request $request)
         'name'              => auth()->check() ? 'nullable' : 'required|string|max:255',
         'email'             => auth()->check() ? 'nullable|email' : 'required|email',
     ]);
-
     // Determine patient ID (null for guest users)
     $patientId = auth()->check() && auth()->user()->patient
         ? auth()->user()->patient->id
         : $request->patient_id;
-
     // Create appointment
     $appointment = Appointment::create([
         'doctor_id'        => $request->doctor_id,
@@ -369,7 +366,6 @@ public function store(Request $request)
         'status'           => 'pending',
         'appointment_number' => 'APT-' . strtoupper(uniqid()),
     ]);
-
     // Send confirmation email (to guest email or patient email)
     $recipientEmail = $appointment->email
     ?? optional($appointment->patient->user)->email
@@ -378,9 +374,10 @@ public function store(Request $request)
     if ($recipientEmail) {
         Mail::to($recipientEmail)->send(new AppointmentBookedMail($appointment, $appointment->appointment_number));
     }
-
     return redirect()->route('appointment.payment', $appointment->id)->with('success', 'Your appointment has been booked successfully!');
 }
+
+
 public function showPayment($id)
 {
     $appointment = Appointment::with('doctor.user', 'department')->findOrFail($id);
@@ -427,6 +424,9 @@ public function update(Request $request, $id)
 
     return redirect()->back()->with('success', 'Appointment updated successfully.');
 }
+
+
+
 // public function processPayment(Request $request, $id)
 // {
 //     $appointment = Appointment::findOrFail($id);
@@ -561,6 +561,8 @@ public function processPayment(Request $request, $id)
         $appointment->delete();
         return redirect()->route('appointment.index')->with('success','Appointment Deleted Successfully');
     }
+
+
     public function updateStatus(Request $request)
 {
     $appointment = Appointment::findOrFail($request->id);

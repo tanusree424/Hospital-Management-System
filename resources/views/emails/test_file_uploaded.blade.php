@@ -5,7 +5,7 @@
 </head>
 <body>
     <h2>Medical Test File Uploaded</h2>
-    <p>Dear {{ $appointment->patient->user->name }},</p>
+    <p>Dear {{ $appointment->patient->user->name ?? "GUEST" }},</p>
 
     <p>A medical test file has been successfully uploaded for your appointment (ID: {{ $appointment->id }}) with Dr. {{ $appointment->doctor->user->name }}.</p>
 

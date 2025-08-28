@@ -242,9 +242,7 @@
                                     <i class="bi bi-pencil">Edit</i>
                                 </button>
                                 @push('modals')
-                                    <!-- Modal -->
-                                    <!-- Edit Patient Modal -->
-                                    <!-- Edit Patient Modal -->
+
                                     <div class="modal fade" id="edit_patient_modal{{ $pat->id }}" tabindex="-1"
                                         aria-labelledby="edit_patient_modal_Label{{ $pat->id }}" aria-hidden="true">
                                         <div class="modal-dialog modal-xl">

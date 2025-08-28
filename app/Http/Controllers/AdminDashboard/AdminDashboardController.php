@@ -13,6 +13,9 @@ use App\Models\Department;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\Service;
+use App\Models\Blog;
+use App\Models\Feedback;
 class AdminDashboardController extends Controller
 {
 public function dashboard()
@@ -27,6 +30,9 @@ public function dashboard()
     $usersCount = User::count();
     $rolesCount = Role::count();
     $permissionsCount = Permission::count();
+    $blogCount = Blog::count();
+    $servicesCount = Service::count();
+    $feedbackCount = Feedback::count();
 
     if ($user->hasRole('Patient')) {
         $appointmentsCount = Appointment::where('patient_id', $user->patient->id)->where('status' , '!=' , 'Completed')->count();
@@ -57,10 +63,12 @@ public function dashboard()
         'departmentsCount',
         'usersCount',
         'rolesCount',
-        'permissionsCount'
+        'permissionsCount',
+        'blogCount',
+        'servicesCount',
+        'feedbackCount'
     ));
 }
-
 
 
 

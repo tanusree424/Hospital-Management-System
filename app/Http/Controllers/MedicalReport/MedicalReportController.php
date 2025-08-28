@@ -8,10 +8,13 @@ use App\Models\Medical_records;
 
 class MedicalReportController extends Controller
 {
-    public function index()
-    {
-        $medical_records = Medical_records::with('patient','doctor','appointment')->paginate(5);
-        return view('pages.AdminPages.MedicalReports.index', compact('medical_records'));
-    }
+public function index()
+{
+    $medical_records = Medical_records::with(['patient.user', 'doctor.user', 'appointment'])->paginate(5);
+
+    return view('pages.AdminPages.MedicalReports.index', compact('medical_records'));
+}
+
+
 
 }

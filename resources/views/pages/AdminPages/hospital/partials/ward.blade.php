@@ -95,10 +95,10 @@
             ],
             language: {
                 search: "Search:",
-                zeroRecords: "No matching roles found",
-                info: "Showing _START_ to _END_ of _TOTAL_ roles",
-                infoEmpty: "No roles available",
-                infoFiltered: "(filtered from _MAX_ total roles)",
+                zeroRecords: "No matching wards found",
+                info: "Showing _START_ to _END_ of _TOTAL_ wards",
+                infoEmpty: "No wards available",
+                infoFiltered: "(filtered from _MAX_ total wards)",
                 lengthMenu: "Show _MENU_ entries"
             }
     })

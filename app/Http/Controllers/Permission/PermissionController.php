@@ -15,7 +15,7 @@ class PermissionController extends Controller
      */
    public function index()
 {
-    if (Gate::denies('view-permission')) {
+    if (Gate::denies('Show Permission')) {
         abort(403, 'Unauthorized access.');
     }
 
@@ -72,14 +72,7 @@ class PermissionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        if (Gate::denies('edit_permission')) {
-            abort(403,'Unauthorized access.');
-        }
-        $permission = Permission::find($id);
-        return view('pages.AdminPages.Permissions.Edit', compact('permission'));
-    }
+
 
     /**
      * Update the specified resource in storage.

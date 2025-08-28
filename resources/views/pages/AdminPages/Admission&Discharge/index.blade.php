@@ -92,15 +92,20 @@
                                 <td>
                                     @php $payment = $admission->payments->first(); @endphp
                                     @if ($admission->discharge === 0 && $payment && !$payment->transaction_id)
-
                                         <div class="badge bg-danger">Please Pay Before Discharge</div>
                                     @else
-                                        <div class="text-center">
-                                            <button class="btn btn-danger btn-sm rounded-pill" data-bs-toggle="modal"
-                                                data-bs-target="#dischargeFormModal{{ $admission->id }}">
-                                                <i class="bi bi-box-arrow-right me-1"></i> Discharge
-                                            </button>
-                                        </div>
+                                        @if ($admission->discharge !== 1)
+                                            <div class="text-center">
+                                                <button class="btn btn-danger btn-sm rounded-pill" data-bs-toggle="modal"
+                                                    data-bs-target="#dischargeFormModal{{ $admission->id }}">
+                                                    <i class="bi bi-box-arrow-right me-1"></i> Discharge
+                                                </button>
+                                            </div>
+                                        @else
+                                            <div class="text-center">
+                                                <span class="badge bg-success text-white">Already Discharged</span>
+                                            </div>
+                                        @endif
                                     @endif
 
                                 </td>
@@ -165,70 +170,88 @@
                     <form action="{{ route('admissions.store') }}" method="POST">
                         @csrf
 
-                        {{-- Patient Selection --}}
-                        {{-- @if ($user->hasRole('Patient'))
-                            @php
-                                $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
-                                    ->whereNull('discharge_date')
-                                    ->exists();
-                            @endphp
+                        @php
+                            $user = auth()->user();
+                            $alreadyAdmitted = false;
 
+                            // If logged in as Patient → check admission
+                            if ($user->hasRole('Patient')) {
+                                $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
+                                    ->where('discharge', 0)
+                                    ->exists();
+                            }
+                        @endphp
+
+                        {{-- If Patient is logged in --}}
+                        @if ($user->hasRole('Patient'))
                             @if ($alreadyAdmitted)
-                                <div class="alert alert-warning m-3">
-                                    You are already admitted. Please contact the administration for further assistance.
-                                </div>
+                                <p class="text-danger">You are already admitted.</p>
                             @else
-                                <select name="patient_id" class="form-select" required readonly>
-                                    <option value="{{ $user->patient->id }}" selected>{{ $user->name }}</option>
+                                <input type="hidden" name="patient_id" value="{{ $user->patient->id }}">
+
+                                {{-- Admission Date --}}
+                                <input type="date" name="admission_date" class="form-control mb-2" required>
+
+                                <input type="number" name="amount" class="form-control mb-2" required
+                                    placeholder="Enter amount">
+
+                                {{-- Ward Selection --}}
+                                <select name="ward_id" id="ward-select" class="form-select mb-2" required>
+                                    <option value="">Select Ward</option>
+                                    @foreach ($wards as $ward)
+                                        <option value="{{ $ward->id }}">{{ $ward->name }}</option>
+                                    @endforeach
                                 </select>
+
+                                {{-- Bed Selection --}}
+                                <select name="bed_id" id="bed-select" class="form-select mb-2" required>
+                                    <option value="">Select Bed</option>
+                                    {{-- JS will populate --}}
+                                </select>
+
+                                <textarea name="reason" class="form-control mb-2" rows="3" placeholder="Reason for admission" required></textarea>
+
+                                <button type="submit" class="btn btn-primary">Admit Me</button>
                             @endif
                         @else
-                            <select name="patient_id" class="form-select" required>
-                                <option value="">Select Patient</option>
-                                @foreach ($availablePatients as $patient)
-                                    <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
+                            {{-- If Admin/Staff logs in --}}
+                            <select name="patient_id" class="form-control mb-2" required>
+                                <option value="">-- Select Patient --</option>
+                                @foreach ($patients as $patient)
+                                    @php
+                                        $isAdmitted = \App\Models\Admission::where('patient_id', $patient->id)
+                                            ->where('discharge', 0)
+                                            ->exists();
+                                    @endphp
+
+                                    {{-- Only show patients who are NOT admitted --}}
+                                    @if (!$isAdmitted)
+                                        <option value="{{ $patient->id }}">{{ $patient->user->name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
-                        @endif --}}
-                        @if ($user->hasRole('Patient'))
-                            @php
 
-                                $alreadyAdmitted = \App\Models\Admission::where('patient_id', $user->patient->id)
-                                    ->where('discharge', 0) // still admitted
-                                    ->exists();
-                            @endphp
+                            <input type="date" name="admission_date" class="form-control mb-2" required>
 
-                            @if ($alreadyAdmitted)
-                                <p>The patient is currently admitted.</p>
-                            @else
-                                <p>The patient is not admitted.</p>
-                            @endif
+                            <input type="number" name="amount" class="form-control mb-2" required placeholder="Enter amount">
+
+                            <select name="ward_id" id="ward-select" class="form-select mb-2" required>
+                                <option value="">Select Ward</option>
+                                @foreach ($wards as $ward)
+                                    <option value="{{ $ward->id }}">{{ $ward->name }}</option>
+                                @endforeach
+                            </select>
+
+                            <select name="bed_id" id="bed-select" class="form-select mb-2" required>
+                                <option value="">Select Bed</option>
+                            </select>
+
+                            <textarea name="reason" class="form-control mb-2" rows="3" placeholder="Reason for admission" required></textarea>
+
+                            <button type="submit" class="btn btn-primary">Admit Patient</button>
                         @endif
-
-
-                        {{-- Admission Date --}}
-                        <input type="date" name="admission_date" class="form-control" required>
-                        <input type="number" name="amount" class="form-control" required id="">
-
-                        {{-- Ward Selection --}}
-                        <select name="ward_id" id="ward-select" class="form-select" required>
-                            <option value="">Select Ward</option>
-                            @foreach ($wards as $ward)
-                                <option value="{{ $ward->id }}">{{ $ward->name }}</option>
-                            @endforeach
-                        </select>
-
-                        {{-- Bed Selection (populated via JS) --}}
-                        <select name="bed_id" id="bed-select" class="form-select" required>
-                            <option value="">Select Bed</option>
-                            {{-- Options will be dynamically loaded --}}
-                        </select>
-
-                        {{-- Reason for admission --}}
-                        <textarea name="reason" class="form-control" rows="3" required></textarea>
-
-                        <button type="submit" class="btn btn-primary">Admit Patient</button>
                     </form>
+
                 </div>
             </div>
         </div>
@@ -417,10 +440,10 @@
             ],
             language: {
                 search: "Search:",
-                zeroRecords: "No matching roles found",
-                info: "Showing _START_ to _END_ of _TOTAL_ roles",
+                zeroRecords: "No matching admissions found",
+                info: "Showing _START_ to _END_ of _TOTAL_ admissions",
                 infoEmpty: "No roles available",
-                infoFiltered: "(filtered from _MAX_ total roles)",
+                infoFiltered: "(filtered from _MAX_ total admissions)",
                 lengthMenu: "Show _MENU_ entries",
             }
         });

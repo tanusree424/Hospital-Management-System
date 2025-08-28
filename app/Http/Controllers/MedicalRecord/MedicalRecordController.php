@@ -70,7 +70,7 @@ public function downloadReport(Request $request)
     $data = [
         'record' => $record,
         'appointment' => $record->appointment,
-        'patient' => $record->appointment->patient->user,
+        'patient' => $record->appointment->patient->user ?? "GUEST",
         'doctor' => $record->appointment->doctor->user,
     ];
 

@@ -18,10 +18,17 @@ use Barryvdh\DomPDF\Facade\Pdf;
 // use App\Models\Admission;
 // use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 class AdmissionController extends Controller
 {
- public function index()
+
+
+public function index()
 {
+    if (Gate::none(['admission_discharge_access'])) {
+       abort(403);
+    }
     $user = auth()->user();
 
     if ($user->hasRole('Patient')) {
@@ -136,6 +143,8 @@ public function ajaxList(Request $request)
 
 public function store(Request $request)
 {
+    Log::info("Admission Store Called", $request->all());
+
     $request->validate([
         'patient_id' => 'required|exists:patients,id',
         'admission_date' => 'required|date',
@@ -143,58 +152,69 @@ public function store(Request $request)
         'bed_id' => 'required|exists:beds,id',
         'reason' => 'required|string',
     ]);
+    Log::info("Validation Passed");
 
-    // 1. Create admission
-    $admission = Admission::create([
-        'patient_id'     => $request->patient_id,
-        'admission_date' => $request->admission_date,
-        'ward_id'        => $request->ward_id,
-        'bed_id'         => $request->bed_id,
-        'reason'         => $request->reason,
-    ]);
-    $amount =  $request->amount;
-    // 2. Mark selected bed as occupied
-    Bed::where('id', $request->bed_id)->update(['status' => 'occupied']);
-
-    // 3. Create initial payment record
-//    $amount = 5000;
-
-//     $payment = Payment::create([
-//         'patient_id'     => $admission->patient_id,
-//         'admission_id'   => $admission->id,
-//         'amount'         => $amount,
-//         'payment_status' => 'Pending',        // Razorpay payment is not yet complete
-//         'payment_method' => 'Pay Later',         // Temporary placeholder, actual method (upi, card...) will be updated after Razorpay success
-//         'transaction_id' => null,
-//         'paid_at'        => null,
-//         'notes'          => 'Auto-generated on admission',
-//     ]);
-
-    // 4. Send WhatsApp Message to Patient
     try {
-        $user = auth()->user();
+        // 1. Create admission
+        $admission = Admission::create([
+            'patient_id'     => $request->patient_id,
+            'admission_date' => $request->admission_date,
+            'ward_id'        => $request->ward_id,
+            'bed_id'         => $request->bed_id,
+            'reason'         => $request->reason,
+        ]);
+        Log::info("Admission Created", ['admission_id' => $admission->id]);
 
-        if ($user->hasRole('Patient') && $user->patient?->phone) {
-            $phone = 'whatsapp:+91' . $user->patient->phone;
-            $message = "✅ Your admission has been confirmed.\n💰 Amount: ₹{$amount}\n🔗 Please log in to complete the payment: https://yourportal.com/login";
+        $amount = $request->amount ?? 0;
+        Log::info("Payment Amount", ['amount' => $amount]);
 
-            $twilio = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
-            $twilio->messages->create($phone, [
-                'from' => env('TWILIO_WHATSAPP_FROM'),
-                'body' => $message
-            ]);
+        // 2. Mark bed occupied
+        Bed::where('id', $request->bed_id)->update(['status' => 'occupied']);
+        Log::info("Bed marked as occupied", ['bed_id' => $request->bed_id]);
+
+        // 3. WhatsApp notification
+        try {
+            $user = auth()->user();
+            Log::info("Auth User", ['user_id' => $user->id, 'roles' => $user->getRoleNames()]);
+
+            if ($user->hasRole('Patient') && $user->patient?->phone) {
+                $phone = 'whatsapp:+91' . $user->patient->phone;
+                $message = "✅ Your admission has been confirmed.\n💰 Amount: ₹{$amount}\n🔗 Please log in to complete the payment: https://yourportal.com/login";
+
+                Log::info("Sending WhatsApp message", ['phone' => $phone, 'message' => $message]);
+
+                $twilio = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
+                $twilio->messages->create($phone, [
+                    'from' => env('TWILIO_WHATSAPP_FROM'),
+                    'body' => $message
+                ]);
+
+                Log::info("WhatsApp Message Sent Successfully", ['phone' => $phone]);
+            } else {
+                Log::warning("User has no phone or not a patient", ['user_id' => $user->id]);
+            }
+        } catch (\Exception $e) {
+            Log::error("WhatsApp Message Failed", ['error' => $e->getMessage()]);
         }
 
-    } catch (\Exception $e) {
-        \Log::error("WhatsApp Message Failed: " . $e->getMessage());
-    }
+        // 4. Redirect to Razorpay
+        Log::info("Redirecting to Payment", ['admission_id' => $admission->id]);
 
-    // 5. Redirect to Razorpay Payment Page
-    return redirect()->route('payments.create', ['admission_id' => $admission->id , 'admission'=>$admission])->with([
-        'success' => 'Patient admitted successfully. Proceed to payment.',
-        'amount' => $amount,
-        'admission_id' => $admission->id,
-    ]);
+        return redirect()->route('payments.create', [
+            'admission_id' => $admission->id,
+            'admission'    => $admission
+        ])->with([
+            'success'      => 'Patient admitted successfully. Proceed to payment.',
+            'amount'       => $amount,
+            'admission_id' => $admission->id,
+        ]);
+    } catch (\Exception $e) {
+        Log::error("Admission Store Failed", [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return back()->with('error', 'Something went wrong. Please check logs.');
+    }
 }
 
 

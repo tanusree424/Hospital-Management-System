@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
 
     <!-- Custom CSS -->
-  <style>
+<style>
     html,
     body {
         margin: 0;
@@ -55,11 +55,13 @@
     }
 
     .sidebar {
-        width: 280px;
-        background: rgba(255, 255, 255, 0.85); /* Less opaque to show background */
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    }
-
+    width: 360px;
+    height:auto; /* Full viewport height */
+    background: rgba(255, 255, 255, 0.85); /* Less opaque to show background */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; /*  enables vertical scroll */
+    /*overscroll-behavior-y: contain; /* prevents body scroll when reaching end */
+}
     .sidebar a {
         color: #48545f;
         padding: 12px 25px;
@@ -67,20 +69,17 @@
         text-decoration: none;
         font-weight: 600;
     }
-
     .sidebar a:hover,
     .sidebar a.active {
         background-color: rgb(211, 18, 211);
         color: #fff;
     }
-
     .main-content {
         flex-grow: 1;
         padding: 30px;
         background-color: rgba(255, 255, 255, 0.85); /* Transparent white */
         min-height: 100vh;
     }
-
     .btn-perm {
         background-color: rgb(127, 239, 239);
         width: 100%;
@@ -120,13 +119,10 @@
         opacity: 0;
         transition: all 0.4s ease;
     }
-
-    /* Show Animation */
     .custom-modal.show {
         top: 100px;
         opacity: 1;
     }
-
     .close-modal {
         position: absolute;
         right: 15px;
@@ -134,8 +130,6 @@
         font-size: 24px;
         cursor: pointer;
     }
-
-    /* Custom Modal 1 */
     .custom-modal1 {
         display: none;
         position: fixed;
@@ -147,7 +141,6 @@
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.6);
     }
-
     .modal-content {
         background-color: #fff;
         margin: 100px auto;
@@ -225,6 +218,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- SweetAlert session handling -->

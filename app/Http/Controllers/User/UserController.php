@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        Gate::authorize('access_user');
+        Gate::authorize('Show User');
         $users = User::latest('id')->get();
         $roles =  Role::all();
         return view('pages.AdminPages.Users.index',compact('users','roles'));
@@ -46,12 +46,12 @@ class UserController extends Controller
         return redirect()->route('user.index')->with('success', 'User created and role assigned successfully.');
     }
 
-    public function edit(string $id )
-    {
-        $user = User::find($id);
-        $roles = Role::all();
-        return view('pages.AdminPages.Users.edit', compact('user','roles'));
-    }
+    // public function edit(string $id )
+    // {
+    //     $user = User::find($id);
+    //     $roles = Role::all();
+    //     return view('pages.AdminPages.Users.edit', compact('user','roles'));
+    // }
 
   public function update(string $id, Request $request)
 {

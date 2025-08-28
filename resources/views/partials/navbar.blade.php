@@ -30,8 +30,7 @@
   <a class="nav-item nav-link  dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
    Login
   </a>
-
-  <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+<ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
     <li><a class="dropdown-item" href="#">Doctors</a></li>
     <li><a class="dropdown-item" href="#">Patient</a></li>
     <li><a class="dropdown-item" href="#">Staff</a></li>

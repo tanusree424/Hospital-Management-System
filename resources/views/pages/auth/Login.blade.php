@@ -1,6 +1,3 @@
-{{-- @extends('layouts.app') --}}
-
-{{-- @section('content') --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,15 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>LOGIN | ADMIN</title>
    <link rel="stylesheet" href="{{asset('custome Assets/css/style.css')}}">
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+   integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 </head>
 
 <body class="d-flex justify-content-center align-items-center vh-100 loginPage">
-
-    <div class="col-md-8 col-lg-6 shadow bg-white rounded-4 p-4">
+ <div class="col-md-8 col-lg-6 shadow bg-white rounded-4 p-4">
         <div class="row align-items-center">
             <!-- Left image section -->
-            <div class="col-md-5 text-center">
+    <div class="col-md-5 text-center">
                 <img src="{{ asset('custome Assets/img/Hospital Staff.png') }}" class="img-fluid" alt="Login Image" style="max-height: 200px;">
             </div>
 
@@ -36,7 +33,6 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
-
                     <!-- Password -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Password</label>
@@ -45,18 +41,14 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
-
                     <!-- Remember Me -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" name="remember">
                         <label class="form-check-label">Remember Me</label>
                     </div>
-
-                    <!-- Submit -->
                     <div class="d-grid mb-3">
                         <button type="submit" class="custom-btn">Login</button>
                     </div>
-
                     <!-- Forgot password -->
                     <div class="text-center">
                         <a href="{{route('password.request')}}" class="text-decoration-none text-muted">Forgot your password?</a>
@@ -65,7 +57,9 @@
             </div>
         </div>
     </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+ integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+ crossorigin="anonymous"></script>
 </body>
 </html>
 {{-- @endsection --}}

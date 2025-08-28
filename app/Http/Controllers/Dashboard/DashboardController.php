@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Doctor;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AppointmentBookedMail;
 
 use Illuminate\Support\Facades\Log;
 use App\Models\Appointment;
@@ -19,7 +20,7 @@ use App\Models\feedback;
 use App\Models\Service;
 use App\Models\Blog;
 use App\Models\Comment;
-
+use Toastr;
 
 
 class DashboardController extends Controller
@@ -106,7 +107,8 @@ public function bookAppointmentByDepartment($id)
     }
     public function services()
     {
-        return view('pages.services');
+        $services = Service::all();
+        return view('pages.services', compact('services'));
     }
     public function appointment()
     {
@@ -133,7 +135,7 @@ public function storeGuest(Request $request)
       $appointmentNumber = 'APT-' . strtoupper(Str::random(6));
     Log::info('Guest Appointment Request', $request->all());
 
-    Appointment::create([
+   $appointment= Appointment::create([
         'department_id'     => $validated['department_id'],
         'doctor_id'         => $validated['doctor_id'],
         'name'              => $validated['name'],
@@ -144,8 +146,15 @@ public function storeGuest(Request $request)
         'user_type'         => 'Guest',
         'appointment_number' =>$appointmentNumber
     ]);
+  //  Toastr::success('Your appointment has been booked! We will contact you soon.');
+  $recipientEmail = $appointment->email
+    ?? optional($appointment->patient->user)->email
+    ?? 'tanubasuchoudhury1997@gmail.com';
 
-    return redirect()->route('guest.payment')->with('success', 'Your appointment has been booked! We will contact you soon.');
+    if ($recipientEmail) {
+        Mail::to($recipientEmail)->send(new AppointmentBookedMail($appointment, $appointment->appointment_number));
+    }
+       return redirect()->route('guest.payment', $appointment->id )->with('success', 'Your appointment has been booked! We will contact you soon.');
 }
 public function getDoctorsByDepartment(Request $request)
 {
@@ -168,8 +177,9 @@ public function getDoctorsByDepartment(Request $request)
     $feedbackPatients = Patient::with('user', 'feedback')->has('feedback')->get();
         return view('pages.patients' ,compact('patients', 'feedbackPatients'));
     }
-    public function paymentPage()
+    public function paymentPage($id)
     {
+        $appointment =  Appointment::find($id);
          $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
 
     // Create Razorpay order
@@ -183,7 +193,9 @@ public function getDoctorsByDepartment(Request $request)
     return view('pages.PaymentPage', [
         'key'     => env('RAZORPAY_KEY'),
         'amount'  => 1500,
-        'orderId' => $order['id']
+        'orderId' => $order['id'],
+        'appointment'=> $appointment,
+        compact('appointment')
     ]);
       //  return view('pages.PaymentPage');
     }
@@ -193,7 +205,6 @@ public function getDoctorsByDepartment(Request $request)
     Log::info('--- Razorpay Success Callback Triggered ---', [
         'incoming_data' => $request->all()
     ]);
-
     try {
         $payment = Payment::create([
             'patient_id'     => null,
@@ -219,6 +230,37 @@ public function getDoctorsByDepartment(Request $request)
 
         return redirect()->route('home')->with('error', 'Payment could not be processed.');
     }
+
+}
+
+public function payLater(Request $request)
+{
+   try {
+        $payment = Payment::create([
+            'patient_id'     => null,
+            'appointment_id' => $request->appointment_id ?? null,
+            'amount'         => 1500.00,
+            'payment_status' => 'Pending',
+            'payment_method' => 'Pay Later',
+            // 'transaction_id' => $request->razorpay_payment_id,
+            // 'paid_at'        => now(),
+        ]);
+
+        Log::info('Payment record Pending', [
+            'payment' => $payment->toArray()
+        ]);
+
+        return redirect()->route('home')->with('success', 'Appointment Booking successful!');
+
+    } catch (\Throwable $e) {
+        Log::error('Error in razorpaySuccess', [
+            'message' => $e->getMessage(),
+            'trace'   => $e->getTraceAsString()
+        ]);
+
+        return redirect()->route('home')->with('error', 'Payment could not be processed.');
+    }
+
 }
 public function patients()
 {
@@ -288,10 +330,15 @@ public function allBlogs()
                  ->get();
                  return view('pages.blogs', compact('blogs'));
 }
-
-public function searchBlog()
+public function contact()
 {
-    return view('pages.search');
+    return view('pages.contact');
+}
+public function searchBlog()
+
+{
+    $departments =  Department::all();
+    return view('pages.search', compact('departments'));
 }
 
 }

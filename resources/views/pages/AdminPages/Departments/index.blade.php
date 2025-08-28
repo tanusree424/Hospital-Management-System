@@ -145,11 +145,8 @@
                                                                 <hr>
                                                             <h4>Department Name: {{ $dept->name }}</h4>
                                                             <h4>Description</h4>
-                                                            <p>
-                                                                {{ $dept->description }}
-                                                            </p>
+                                                            <p>{{ $dept->description }}</p>
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -321,10 +318,10 @@
             ],
             language: {
                 search: "Search:",
-                zeroRecords: "No matching patients found",
-                info: "Showing _START_ to _END_ of _TOTAL_ patients",
-                infoEmpty: "No patients available",
-                infoFiltered: "(filtered from _MAX_ total patients)",
+                zeroRecords: "No matching departments found",
+                info: "Showing _START_ to _END_ of _TOTAL_departments",
+                infoEmpty: "No departments available",
+                infoFiltered: "(filtered from _MAX_ total departments)",
                 lengthMenu: "Show _MENU_ entries"
             }
         });

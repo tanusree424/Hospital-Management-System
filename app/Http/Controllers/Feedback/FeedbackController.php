@@ -25,10 +25,7 @@ class FeedbackController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'message' => 'nullable|string|max:1000',
            'patientId' => 'nullable|integer|exists:patients,id',
- // Validate patientId coming from form
         ]);
-
-        // Create feedback using the patient_id sent from the form (discharged patient)
 $patientId = auth()->user()->hasRole('Patient')
     ? auth()->user()->patient->id
     : $request->patientId;
@@ -38,7 +35,6 @@ $patientId = auth()->user()->hasRole('Patient')
     'patient_id' =>  $patientId,
 ]);
 \Log::info($request->all());
-
         $whatsappMessage = "🙏 Thank you for your valuable feedback!\n⭐ Rating: {$request->rating}\n💬 Message: {$request->message}\nWe appreciate your time. - Medinova Hospital";
 
         // Get patient's WhatsApp number by patientId
@@ -65,6 +61,8 @@ $patientId = auth()->user()->hasRole('Patient')
 
         return response()->json(['success' => true]);
     }
+
+
     public function removeFeedback($id)
     {
         $feedback  = Feedback::findOrFail($id);
